@@ -5,23 +5,42 @@
 void* ManageFunction(void* argv)
 {
 	FPThreadManager* pManager = (FPThreadManager*)argv;
+	bool iSkip = false;
+	int nWork;
 
 	//the thread will be re-used until all the jobs are done
 	while(true)
 	{
 		//The thread is blocked until being waken up
 		pManager->waitSemaphore();
+		if(pManager->isTerminated())
+			break;
+
 		printf("thread wakeup.\n");
 
 		//Get a job from the job queue
 		pManager->lockMutex();
-		int nWork = pManager->popJob();
+		if(pManager->isEmpty())
+		{
+			printf("thread: no job to pop!\n");
+			iSkip = true;
+		}else
+		{
+			nWork = pManager->popJob();
+		}
 		pManager->unlockMutex();
 
-		printf("call the job function.\n");
-		pManager->runJobFunction(nWork);
+		if(iSkip)//skip iteration if no job has been popped
+		{
+			iSkip = false;
+		}else
+		{
+			printf("call the job function.\n");
+			pManager->runJobFunction(nWork);
+		}
 	}
 
+	printf("thread terminate.\n");
 	return 0;
 }
 
@@ -30,6 +49,8 @@ FPThreadManager::FPThreadManager(int (*threadFuction)(int), int nMaxThreadCnt) {
 
 	sem_init(&m_sem, 0, 0);
 	pthread_mutex_init(&m_mutex, NULL);
+	pthread_mutex_init(&t_mutex, NULL);
+	threads_terminate = false;
 
 	m_threadFuction = threadFuction;
 
@@ -46,12 +67,42 @@ FPThreadManager::~FPThreadManager()
 {
 	sem_destroy(&m_sem);
 	pthread_mutex_destroy(&m_mutex);
+	pthread_mutex_destroy(&t_mutex);
+}
 
+//check if thread pool is terminated
+bool FPThreadManager::isTerminated()
+{
+	return threads_terminate;
+}
+
+//set termination flag
+int FPThreadManager::setTerminate()
+{
+	this->lockTMutex();
+	threads_terminate = true;
+	this->unlockTMutex();
+
+	//notify all threads that pool is terminated (we check flag threads_terminate right after wait_semaphore)
+	list<FPThread*>::iterator it;
+	for(it=m_threadList.begin(); it!=m_threadList.end();it++)
+	{
+		this->setSemaphore();
+	}
+
+	return 0;
+}
+
+//wait all threads to be terminated
+int FPThreadManager::joinAllThreads()
+{
 	list<FPThread*>::iterator it;
 	for(it=m_threadList.begin(); it!=m_threadList.end();it++)
 	{
 		(*it)->joinThread();
 	}
+
+	return 0;
 }
 
 // Semaphore waits
@@ -79,10 +130,28 @@ int FPThreadManager::unlockMutex()
 	return pthread_mutex_unlock(&m_mutex);
 }
 
+// grab terminate flag lock
+int FPThreadManager::lockTMutex()
+{
+	return pthread_mutex_lock(&t_mutex);
+}
+
+// release terminate flag lock
+int FPThreadManager::unlockTMutex()
+{
+	return pthread_mutex_unlock(&t_mutex);
+}
+
 // Push job data into the queue
 void FPThreadManager::pushJob(int jobData)
 {
 	m_jobQueue.push(jobData);
+}
+
+// check if the job queue is empty, return true if job queue is empty
+bool FPThreadManager::isEmpty()
+{
+	return m_jobQueue.empty();
 }
 
 // Pop a job data out of the job queue
