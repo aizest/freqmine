@@ -6,8 +6,8 @@ CXXFLAGS += -Wno-deprecated
 
 all: $(TARGET)
 
-$(TARGET): fpgrowth.o data.o fp_tree.o buffer.o fsout.o fp_node.o wtime.o
-	$(CXX) $(CXXFLAGS) $(LDFLAGS) fpgrowth.o data.o fp_tree.o buffer.o fsout.o fp_node.o wtime.o $(LIBS) -o $(TARGET)
+$(TARGET): fpgrowth.o data.o fp_tree.o buffer.o fsout.o fp_node.o wtime.o fp_thread_manager.o fp_thread.o thread_test.o
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) fpgrowth.o data.o fp_tree.o buffer.o fsout.o fp_node.o wtime.o fp_thread_manager.o fp_thread.o thread_test.o -lpthread $(LIBS) -o $(TARGET)
 
 wtime.o: wtime.cpp wtime.h
 	$(CXX) $(CXXFLAGS) -c wtime.cpp -o wtime.o
