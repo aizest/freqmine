@@ -27,6 +27,7 @@
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.1932151962" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.cross.cpp.linker.1823514830" name="Cross G++ Linker" superClass="cdt.managedbuild.tool.gnu.cross.cpp.linker">
+								<option id="gnu.cpp.link.option.flags.505886024" superClass="gnu.cpp.link.option.flags" value="-pthread" valueType="string"/>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.linker.input.2006095983" superClass="cdt.managedbuild.tool.gnu.cpp.linker.input">
 									<additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
 									<additionalInput kind="additionalinput" paths="$(LIBS)"/>
@@ -456,7 +457,18 @@
 				</scannerConfigBuildInfo>
 			</storageModule>
 			<storageModule moduleId="org.eclipse.cdt.core.externalSettings"/>
-			<storageModule moduleId="org.eclipse.cdt.make.core.buildtargets"/>
+			<storageModule moduleId="org.eclipse.cdt.make.core.buildtargets">
+				<buildTargets>
+					<target name="all" path="" targetID="org.eclipse.cdt.build.MakeTargetBuilder">
+						<buildCommand>make</buildCommand>
+						<buildArguments/>
+						<buildTarget>freqmin</buildTarget>
+						<stopOnError>true</stopOnError>
+						<useDefaultCommand>false</useDefaultCommand>
+						<runAllBuilders>true</runAllBuilders>
+					</target>
+				</buildTargets>
+			</storageModule>
 		</cconfiguration>
 		<cconfiguration id="cdt.managedbuild.config.gnu.cross.exe.release.1480196758">
 			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="cdt.managedbuild.config.gnu.cross.exe.release.1480196758" moduleId="org.eclipse.cdt.core.settings" name="Release">
@@ -912,8 +924,19 @@
 					</profile>
 				</scannerConfigBuildInfo>
 			</storageModule>
-			<storageModule moduleId="org.eclipse.cdt.make.core.buildtargets"/>
 			<storageModule moduleId="org.eclipse.cdt.core.externalSettings"/>
+			<storageModule moduleId="org.eclipse.cdt.make.core.buildtargets">
+				<buildTargets>
+					<target name="all" path="" targetID="org.eclipse.cdt.build.MakeTargetBuilder">
+						<buildCommand>make</buildCommand>
+						<buildArguments/>
+						<buildTarget>freqmin</buildTarget>
+						<stopOnError>true</stopOnError>
+						<useDefaultCommand>false</useDefaultCommand>
+						<runAllBuilders>true</runAllBuilders>
+					</target>
+				</buildTargets>
+			</storageModule>
 		</cconfiguration>
 	</storageModule>
 	<storageModule moduleId="cdtBuildSystem" version="4.0.0">
