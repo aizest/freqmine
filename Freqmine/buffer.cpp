@@ -36,7 +36,7 @@ THE POSSIBILITY OF SUCH DAMAGE.
 #include <stdlib.h>
 #include "buffer.h"
 #include "common.h"
-#include <malloc.h>
+//#include <malloc.h>
 
 memory::memory()
 {

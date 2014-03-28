@@ -27,7 +27,7 @@ private:
 
 
 public:
-	FPThreadManager(void (*threadFuction)(int), int nMaxThreadCnt);
+	FPThreadManager(int (*threadFuction)(int), int nMaxThreadCnt);
 	virtual ~FPThreadManager();
 
 	int waitSemaphore();

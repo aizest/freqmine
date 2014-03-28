@@ -77,7 +77,7 @@ int** compact;
 int** supp;
 
 
-stack** list;
+stack** flist;
 int TRANSACTION_NO=0;
 int ITEM_NO=100;
 int THRESHOLD;
@@ -170,7 +170,7 @@ int main(int argc, char **argv)
 		i=0;
 		for(node=fptree->Root->leftchild; node!=NULL; node=node->leftchild)
 		{
-			list[0]->FS[i++]=node->itemname;
+			flist[0]->FS[i++]=node->itemname;
 		}
 
 		if (fout)

@@ -66,7 +66,7 @@ extern int **ITlen;
 extern int** bran;
 extern int** prefix;
  
-extern stack** list;
+extern stack** flist;
 
 
 

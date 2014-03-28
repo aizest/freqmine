@@ -26,7 +26,7 @@ void* ManageFunction(void* argv)
 }
 
 
-FPThreadManager::FPThreadManager(void (*threadFuction)(int), int nMaxThreadCnt) {
+FPThreadManager::FPThreadManager(int (*threadFuction)(int), int nMaxThreadCnt) {
 
 	sem_init(&m_sem, 0, 0);
 	pthread_mutex_init(&m_mutex, NULL);

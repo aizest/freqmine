@@ -835,8 +835,8 @@ void FP_tree::scan1_DB(Data* fdat)
 		rightsib_backpatch_count = prefix + workingthread;
 		sum_item_num = rightsib_backpatch_count + workingthread;
 		new_data_num = sum_item_num  + workingthread;
-		list = (stack **) (new_data_num + workingthread);
-		hashtable = (Fnode ***) (list + workingthread);
+		flist = (stack **) (new_data_num + workingthread);
+		hashtable = (Fnode ***) (flist + workingthread);
 		nodestack = hashtable + workingthread;
 		fast_rightsib_table = (Fnode ****) (nodestack + workingthread);
 		rightsib_backpatch_stack = fast_rightsib_table + workingthread;
@@ -848,7 +848,7 @@ void FP_tree::scan1_DB(Data* fdat)
 		hot_node_index = hot_node_depth + num_hot_node;
 		global_nodenum = (int **) (hot_node_index + num_hot_node);
 		for (i = 0; i < workingthread; i ++) {
-			list[i] = new stack(itemno);
+			flist[i] = new stack(itemno);
 			thread_finish_status[i] = itemno;
 			thread_begin_status[i] = itemno - 1;
 		}
@@ -1184,11 +1184,12 @@ void FP_tree::scan2_DB(int workingthread)
 //       printf("we have %d nodes in the initial FP tree\n", totalnodes);
 }
 
-void scan2_DB_parallel(int j){
+int scan2_DB_parallel(int j){
 	int local_rightsib_backpatch_count = rightsib_backpatch_count[j][0];
 	Fnode ***local_rightsib_backpatch_stack = rightsib_backpatch_stack[j];
 	for (int i = 0; i < local_rightsib_backpatch_count; i ++)
 		*local_rightsib_backpatch_stack[i] = NULL;
+	return 0;
 }
 
 void FP_tree::scan1_DB(int thread, FP_tree* old_tree, int item)
@@ -1234,7 +1235,7 @@ void FP_tree::powerset(int*prefix, int prefixlen, int* items, int current, int i
 	{
 		if(prefixlen!=0)
 		{	
-				fout->printset(list[thread]->top, list[thread]->FS);
+				fout->printset(flist[thread]->top, flist[thread]->FS);
 				fout->printSet(prefixlen, prefix, count[global_temp_order_array[thread][prefix[prefixlen-1]]]);
 		}
 	}else{
@@ -1248,7 +1249,7 @@ void FP_tree::powerset(int*prefix, int prefixlen, int* items, int current, int i
 
 void FP_tree::generate_all(int new_item_no, int thread, FSout* fout)const
 { 
-	powerset(prefix[thread], 0, list[thread]->FS, list[thread]->top, list[thread]->top+new_item_no, fout, thread); 
+	powerset(prefix[thread], 0, flist[thread]->FS, flist[thread]->top, flist[thread]->top+new_item_no, fout, thread);
 }
 
 bool FP_tree::Single_path(int thread)const
@@ -1366,7 +1367,7 @@ int FP_tree::FP_growth_first(FSout* fout)
 			//release_node_array_before_mining(sequence, thread, workingthread); remove due to data race
 			memory *local_fp_tree_buf = fp_tree_buf[thread];
 			memory *local_fp_buf = fp_buf[thread];
-			stack *local_list = list[thread];
+			stack *local_list = flist[thread];
 			int *local_ITlen = ITlen[thread];
 			int *local_global_table_array = global_table_array[thread];
 			int *local_global_count_array = global_count_array[thread];
@@ -1453,7 +1454,7 @@ int FP_tree::FP_growth(int thread, FSout* fout)
 	int function_type;
 	memory *local_fp_tree_buf = fp_tree_buf[thread];
 	memory *local_fp_buf = fp_buf[thread];
-	stack *local_list = list[thread];
+	stack *local_list = flist[thread];
 	int *local_ITlen = ITlen[thread];
 	int *local_global_table_array = global_table_array[thread];
 	int *local_global_count_array = global_count_array[thread];
