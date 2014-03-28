@@ -43,6 +43,7 @@ THE POSSIBILITY OF SUCH DAMAGE.
 
 #define SORTHRESH 9
 
+void scan2_DB_parallel(int j);
   
 class FP_tree {
 public:

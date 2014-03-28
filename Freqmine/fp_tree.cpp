@@ -41,6 +41,7 @@ THE POSSIBILITY OF SUCH DAMAGE.
 #include "buffer.h"
 #include "common.h"
 #include "wtime.h"
+#include "fp_thread_manager.h"
 
 #ifdef _OPENMP
 #include <omp.h>
@@ -1163,16 +1164,31 @@ void FP_tree::scan2_DB(int workingthread)
 	}
 	int totalnodes = cal_level_25(0);
 	
-#pragma omp parallel for
-	for (j = 0; j < workingthread; j ++) {
+//#pragma omp parallel for
+	//TODO
+	FPThreadManager* pManager = new FPThreadManager(scan2_DB_parallel, 10);
+	for(j = 0; j< workingthread; j++){
+		pManager->pushJob(j);
+	}
+	for(j = 0; j< workingthread; j++){
+			pManager->setSemaphore();
+	}
+/*	for (j = 0; j < workingthread; j ++) {
 		int local_rightsib_backpatch_count = rightsib_backpatch_count[j][0];
 		Fnode ***local_rightsib_backpatch_stack = rightsib_backpatch_stack[j];
 		for (int i = 0; i < local_rightsib_backpatch_count; i ++)
 			*local_rightsib_backpatch_stack[i] = NULL;
-	}
+	}*/
 	wtime(&tend);
 //	printf("Creating the first tree from source file cost %f seconds\n", tend - tstart);
 //       printf("we have %d nodes in the initial FP tree\n", totalnodes);
+}
+
+void scan2_DB_parallel(int j){
+	int local_rightsib_backpatch_count = rightsib_backpatch_count[j][0];
+	Fnode ***local_rightsib_backpatch_stack = rightsib_backpatch_stack[j];
+	for (int i = 0; i < local_rightsib_backpatch_count; i ++)
+		*local_rightsib_backpatch_stack[i] = NULL;
 }
 
 void FP_tree::scan1_DB(int thread, FP_tree* old_tree, int item)

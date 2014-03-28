@@ -2,7 +2,11 @@
 #define CTHREADMANAGER_H_
 
 #include <stdio.h>
+
+#ifndef LIST_H_
 #include <list>
+#endif
+
 #include <queue>
 #include <semaphore.h>
 
@@ -23,7 +27,7 @@ private:
 
 
 public:
-	FPThreadManager(int (*threadFuction)(int), int nMaxThreadCnt);
+	FPThreadManager(void (*threadFuction)(int), int nMaxThreadCnt);
 	virtual ~FPThreadManager();
 
 	int waitSemaphore();
