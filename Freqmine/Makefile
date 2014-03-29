@@ -2,7 +2,7 @@ PREFIX=${PARSECDIR}/pkgs/apps/freqmine/inst/${PARSECPLAT}
 
 TARGET = freqmine
 
-CXXFLAGS += -Wno-deprecated
+CXXFLAGS += -Wno-deprecated -fopenmp
 
 all: $(TARGET)
 

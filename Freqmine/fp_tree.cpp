@@ -1166,7 +1166,8 @@ void FP_tree::scan2_DB(int workingthread)
 	
 //#pragma omp parallel for
 	//TODO
-	FPThreadManager* pManager = new FPThreadManager(scan2_DB_parallel, 10);
+	FPThreadManager* pManager = new FPThreadManager(scan2_DB_parallel, workingthread);
+	printf("workingthread: %d\n",workingthread);
 	for(j = 0; j< workingthread; j++){
 		pManager->pushJob(j);
 		pManager->setSemaphore();
