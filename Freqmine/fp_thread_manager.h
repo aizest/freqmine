@@ -35,7 +35,7 @@ public:
 
 	int joinAllThreads();
 
-	bool isEmpty();
+	bool isJobEmpty();
 
 	bool isTerminated();
 

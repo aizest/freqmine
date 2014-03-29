@@ -5,7 +5,6 @@
 void* ManageFunction(void* argv)
 {
 	FPThreadManager* pManager = (FPThreadManager*)argv;
-	bool iSkip = false;
 	int nWork;
 
 	//the thread will be re-used until all the jobs are done
@@ -20,23 +19,22 @@ void* ManageFunction(void* argv)
 
 		//Get a job from the job queue
 		pManager->lockMutex();
-		if(pManager->isEmpty())
+		if(pManager->isJobEmpty())
 		{
 			printf("thread: no job to pop!\n");
-			iSkip = true;
+			continue;
 		}else
 		{
 			nWork = pManager->popJob();
 		}
 		pManager->unlockMutex();
 
-		if(iSkip)//skip iteration if no job has been popped
-		{
-			iSkip = false;
-		}else
-		{
-			printf("call the job function.\n");
-			pManager->runJobFunction(nWork);
+
+		printf("call the job function.\n");
+		pManager->runJobFunction(nWork);
+		//terminate if job queue is empty (so far)
+		if(pManager->isJobEmpty()){
+			pManager->setTerminate();
 		}
 	}
 
@@ -149,7 +147,7 @@ void FPThreadManager::pushJob(int jobData)
 }
 
 // check if the job queue is empty, return true if job queue is empty
-bool FPThreadManager::isEmpty()
+bool FPThreadManager::isJobEmpty()
 {
 	return m_jobQueue.empty();
 }

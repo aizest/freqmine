@@ -1169,10 +1169,11 @@ void FP_tree::scan2_DB(int workingthread)
 	FPThreadManager* pManager = new FPThreadManager(scan2_DB_parallel, 10);
 	for(j = 0; j< workingthread; j++){
 		pManager->pushJob(j);
+		pManager->setSemaphore();
 	}
-	for(j = 0; j< workingthread; j++){
-			pManager->setSemaphore();
-	}
+	pManager->joinAllThreads();
+	pManager->~FPThreadManager();
+
 /*	for (j = 0; j < workingthread; j ++) {
 		int local_rightsib_backpatch_count = rightsib_backpatch_count[j][0];
 		Fnode ***local_rightsib_backpatch_stack = rightsib_backpatch_stack[j];
