@@ -1,5 +1,5 @@
-#ifndef CTHREADMANAGER_H_
-#define CTHREADMANAGER_H_
+#ifndef FPTHREADMANAGER_H_
+#define FPHREADMANAGER_H_
 
 #include <stdio.h>
 
@@ -60,4 +60,4 @@ public:
 	int runJobFunction(int nWork);
 };
 
-#endif /* CTHREADMANAGER_H_ */
+#endif

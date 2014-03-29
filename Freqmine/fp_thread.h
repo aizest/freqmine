@@ -1,6 +1,6 @@
 
-#ifndef CTHREAD_H_
-#define CTHREAD_H_
+#ifndef FPTHREAD_H_
+#define FPTHREAD_H_
 
 #include <pthread.h>
 
@@ -14,4 +14,4 @@ public:
 	void joinThread();
 };
 
-#endif /* CTHREAD_H_ */
+#endif
