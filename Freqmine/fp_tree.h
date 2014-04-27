@@ -65,6 +65,8 @@ public:
 	unsigned int *MR_nodes;
 	char** MB_nodes;
 	int num_hot_item;
+	pthread_mutex_t a_mutex; // Mutex to protect the application block
+
 private:
 	void scan1_DB(int,FP_tree*, int);			//build header_table
 	int cal_level_25(int);
@@ -84,6 +86,8 @@ public:
 	int FP_growth(int thread, FSout* fout);
 	void fill_count(int, int);
 	void insert(int* compact, int counts, int current, int ntype, int thread);
+	int lockMutex();
+	int unlockmutex();
 };
 
 

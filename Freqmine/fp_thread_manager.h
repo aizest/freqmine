@@ -18,8 +18,9 @@ class FPThreadManager {
 	friend void* ManageFunction(void*);
 private:
 	sem_t m_sem;	//Semaphore
-	pthread_mutex_t m_mutex; // Mutex
+	pthread_mutex_t m_mutex; // Mutex to protect the job queue
 	pthread_mutex_t t_mutex; // protect threads_terminate
+
 
 	bool threads_terminate;	//notify the termination of thread pools
 

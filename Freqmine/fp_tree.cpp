@@ -210,6 +210,7 @@ template <class T> void first_transform_FPTree_into_FPArray(FP_tree *fptree, T m
 	T *ItemArray = (T *)local_buf->newbuf(1, new_data_num[0][0] * sizeof(T));
 #pragma omp parallel for
 	for (j = 0; j < workingthread; j ++) {
+		//printf("\n\nParallel threads #: %d\n\n",omp_get_num_threads());
 		int kept_itemiter;
 		int itemiter = content_offset_array[j] - 1;
 		int stacktop;
@@ -532,6 +533,7 @@ void FP_tree::database_tiling(int workingthread)
 	}
 #pragma omp parallel for schedule(dynamic,1)
 	for (i = 0; i < mapfile->tablesize; i ++) {
+		//printf("\n\nParallel threads #: %d\n\n",omp_get_num_threads());
 		int k, l;
 		int *content;
 		MapFileNode *currentnode;
@@ -1273,6 +1275,7 @@ void FP_tree::release_node_array_after_mining(int sequence, int thread, int work
 			current = thread_finish_status[i];
 	}
 {
+	//Lock needed!
 #pragma omp critical
 	{
 		if (current < released_pos) {
@@ -1295,6 +1298,7 @@ void FP_tree::release_node_array_before_mining(int sequence, int thread, int wor
 	}
 	current ++;
 {
+//Lock needed!
 #pragma omp critical
 	{
 		if (current < released_pos) {
@@ -1544,5 +1548,16 @@ int FP_tree::FP_growth(int thread, FSout* fout)
 		local_fp_buf->freebuf(MR_nodes[sequence], MC_nodes[sequence], MB_nodes[sequence]);
 	}
 	return 0;
+}
+
+int FP_tree::lockMutex()
+{
+	int n= pthread_mutex_lock(&a_mutex);
+	return n;
+}
+
+int FP_tree::unlockmutex()
+{
+	return pthread_mutex_unlock(&a_mutex);
 }
 
