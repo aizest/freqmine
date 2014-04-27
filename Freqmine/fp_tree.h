@@ -88,6 +88,7 @@ public:
 	void insert(int* compact, int counts, int current, int ntype, int thread);
 	int lockMutex();
 	int unlockmutex();
+	int scan2_DB_parallel_1(int j,Fnode **local_hashtable);
 };
 
 
