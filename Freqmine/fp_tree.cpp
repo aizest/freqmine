@@ -1168,7 +1168,7 @@ void FP_tree::scan2_DB(int workingthread)
 	
 //#pragma omp parallel for
 	//TODO
-	FPThreadManager* pManager = new FPThreadManager(scan2_DB_parallel, workingthread);
+	FPThreadManager* pManager = new FPThreadManager(scan2_DB_parallel_2, workingthread);
 	printf("workingthread: %d\n",workingthread);
 	for(j = 0; j< workingthread; j++){
 		pManager->pushJob(j);
@@ -1188,7 +1188,7 @@ void FP_tree::scan2_DB(int workingthread)
 //       printf("we have %d nodes in the initial FP tree\n", totalnodes);
 }
 
-int scan2_DB_parallel(int j){
+int scan2_DB_parallel_2(int j){
 	int local_rightsib_backpatch_count = rightsib_backpatch_count[j][0];
 	Fnode ***local_rightsib_backpatch_stack = rightsib_backpatch_stack[j];
 	for (int i = 0; i < local_rightsib_backpatch_count; i ++)
