@@ -1,0 +1,5 @@
+With OpenMP:
+the data preparation cost 0.089319 seconds, the FPgrowth cost 0.395119 seconds
+
+Without OpenMP:
+the data preparation cost 0.080789 seconds, the FPgrowth cost 0.792588 seconds
