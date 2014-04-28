@@ -1697,8 +1697,7 @@ int FP_tree::FP_growth(int thread, FSout* fout) {
 }
 
 int FP_tree::lockMutex() {
-	int n = pthread_mutex_lock(&a_mutex);
-	return n;
+	return pthread_mutex_lock(&a_mutex);
 }
 
 int FP_tree::unlockmutex() {
