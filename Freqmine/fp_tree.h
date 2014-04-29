@@ -109,5 +109,7 @@ struct Scan2_DB_Struct{
 	Fnode **local_hashtable;
 };
 
+int scan2_DB_parallel_1_wrapper(FP_tree * fp_tree, int j);
+
 #endif
 

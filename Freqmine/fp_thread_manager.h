@@ -11,8 +11,11 @@
 #include <semaphore.h>
 
 #include "fp_thread.h"
+//#include "fp_tree.h"
 
 using namespace std;
+
+class FP_tree;
 
 class FPThreadManager {
 	friend void* ManageFunction(void*);
@@ -22,18 +25,19 @@ private:
 	pthread_mutex_t t_mutex; // protect threads_terminate
 
 	void* data; //a pointer to the struct which stores the parameters of the function
+	FP_tree *tree;
 
 	bool threads_terminate;	//notify the termination of thread pools
 
 	queue<int> m_jobQueue; // job queue
 	list<FPThread*> m_threadList; // thread list
 
-	int (*m_threadFuction)(int); //pointer of job function
+	int (*m_threadFuction)(FP_tree*, int); //pointer of job function
 
 
 public:
-	FPThreadManager(int (*threadFuction)(int), int nMaxThreadCnt);
-	FPThreadManager(int (*threadFuction)(int), int nMaxThreadCnt, void* data);
+	FPThreadManager(int (*threadFuction)(FP_tree*, int), int nMaxThreadCnt);
+	FPThreadManager(int (*threadFuction)(FP_tree*, int), int nMaxThreadCnt, void* data);
 	virtual ~FPThreadManager();
 
 	int joinAllThreads();
@@ -62,11 +66,13 @@ public:
 
 	int runJobFunction(int nWork);
 
-	void setFunction(int (*threadFuction)(int));
+	void setFunction(int (*threadFuction)(FP_tree*, int));
 
 	void setParameter(void* pData);
 
 	void setCounter(int count);
+
+	void setFPTree(FP_tree* fpTree);
 };
 
 #endif

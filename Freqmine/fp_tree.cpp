@@ -1197,7 +1197,8 @@ void FP_tree::scan2_DB(int workingthread) {
 //	FPThreadManager* pManager = new FPThreadManager(scan2_DB_parallel_2,
 //			workingthread);
 	printf("workingthread: %d\n", workingthread);
-	pManager->setFunction(FP_tree::scan2_DB_parallel_2);
+	pManager->setFunction(scan2_DB_parallel_1_wrapper);
+	pManager->setFPTree(this);
 	pManager->setParameter(NULL);
 	for (j = 0; j < workingthread; j++) {
 		pManager->pushJob(j);
@@ -1215,6 +1216,11 @@ void FP_tree::scan2_DB(int workingthread) {
 	wtime(&tend);
 	//	printf("Creating the first tree from source file cost %f seconds\n", tend - tstart);
 	//       printf("we have %d nodes in the initial FP tree\n", totalnodes);
+}
+
+int scan2_DB_parallel_1_wrapper(FP_tree * fp_tree, int j)
+{
+	return fp_tree->scan2_DB_parallel_2(j);
 }
 
 int FP_tree::scan2_DB_parallel_1(int j, Fnode **local_hashtable) {

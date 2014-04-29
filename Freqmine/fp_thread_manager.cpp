@@ -44,7 +44,7 @@ void* ManageFunction(void* argv)
 }
 
 
-FPThreadManager::FPThreadManager(int (*threadFuction)(int), int nMaxThreadCnt) {
+FPThreadManager::FPThreadManager(int (*threadFuction)(FP_tree*, int), int nMaxThreadCnt) {
 
 	sem_init(&m_sem, 0, 0);
 	pthread_mutex_init(&m_mutex, NULL);
@@ -63,7 +63,7 @@ FPThreadManager::FPThreadManager(int (*threadFuction)(int), int nMaxThreadCnt) {
 	}
 }
 
-FPThreadManager::FPThreadManager(int (*threadFuction)(int), int nMaxThreadCnt, void* pData) {
+FPThreadManager::FPThreadManager(int (*threadFuction)(FP_tree*, int), int nMaxThreadCnt, void* pData) {
 
 	sem_init(&m_sem, 0, 0);
 	pthread_mutex_init(&m_mutex, NULL);
@@ -89,9 +89,14 @@ FPThreadManager::~FPThreadManager()
 	pthread_mutex_destroy(&t_mutex);
 }
 
-void FPThreadManager::setFunction(int (*threadFuction)(int))
+void FPThreadManager::setFunction(int (*threadFuction)(FP_tree*, int))
 {
 	m_threadFuction = threadFuction;
+}
+
+void FPThreadManager::setFPTree(FP_tree* fpTree)
+{
+	tree = fpTree;
 }
 
 void FPThreadManager::setParameter(void* pData)
@@ -200,5 +205,5 @@ int FPThreadManager::popJob()
 // Run the job function (specified by the constructor) with the specified job data
 int FPThreadManager::runJobFunction(int nWork)
 {
-	return (*m_threadFuction)(nWork);
+	return (*m_threadFuction)(tree, nWork);
 }
