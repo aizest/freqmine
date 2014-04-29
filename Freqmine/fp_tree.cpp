@@ -505,6 +505,9 @@ void stack::insert(FP_tree* fptree) {
 
 void FP_tree::init(int old_itemno, int new_itemno, int thread) {
 	int i;
+	//Create a lock to protect the critical section for the Pthread implementation
+	pthread_mutex_init(&a_mutex, NULL);
+
 	Root = (Fnode*) fp_buf[thread]->newbuf(1, sizeof(Fnode));
 	Root->init(-1, 0);
 	if (old_itemno != -1) {
