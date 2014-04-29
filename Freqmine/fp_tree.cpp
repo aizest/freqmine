@@ -41,7 +41,8 @@
 #include "buffer.h"
 #include "common.h"
 #include "wtime.h"
-#include "fp_thread_manager.h"
+//#include "fp_thread_manager.h"
+#include "pthread_constants.h"
 
 #ifdef _OPENMP
 #include <omp.h>
@@ -503,7 +504,7 @@ void stack::insert(FP_tree* fptree) {
 	}
 }
 
-void FP_tree::init(int old_itemno, int new_itemno, int thread) {
+void FP_tree::init(int old_itemno, int new_itemno, int thread, FPThreadManager* threadManager) {
 	int i;
 	//Create a lock to protect the critical section for the Pthread implementation
 	pthread_mutex_init(&a_mutex, NULL);
@@ -520,6 +521,7 @@ void FP_tree::init(int old_itemno, int new_itemno, int thread) {
 		new_data_num[thread][0] = 0;
 	}
 	itemno = new_itemno;
+	pManager = threadManager;
 }
 
 void FP_tree::database_tiling(int workingthread) {
@@ -1190,19 +1192,21 @@ void FP_tree::scan2_DB(int workingthread) {
 	}
 	int totalnodes = cal_level_25(0);
 
-	//#pragma omp parallel for
+//	#pragma omp parallel for
 	//TODO
-	FPThreadManager* pManager = new FPThreadManager(scan2_DB_parallel_2,
-			workingthread);
+//	FPThreadManager* pManager = new FPThreadManager(scan2_DB_parallel_2,
+//			workingthread);
 	printf("workingthread: %d\n", workingthread);
+	pManager->setFunction(FP_tree::scan2_DB_parallel_2);
+	pManager->setParameter(NULL);
 	for (j = 0; j < workingthread; j++) {
 		pManager->pushJob(j);
 		pManager->setSemaphore();
 	}
 	pManager->joinAllThreads();
-	pManager->~FPThreadManager();
+//	pManager->~FPThreadManager();
 
-	/*	for (j = 0; j < workingthread; j ++) {
+	/*for (j = 0; j < workingthread; j ++) {
 	 int local_rightsib_backpatch_count = rightsib_backpatch_count[j][0];
 	 Fnode ***local_rightsib_backpatch_stack = rightsib_backpatch_stack[j];
 	 for (int i = 0; i < local_rightsib_backpatch_count; i ++)
@@ -1322,7 +1326,7 @@ int FP_tree::scan2_DB_parallel_1(int j, Fnode **local_hashtable) {
 	return 0;
 }
 
-int scan2_DB_parallel_2(int j) {
+int FP_tree::scan2_DB_parallel_2(int j) {
 	int local_rightsib_backpatch_count = rightsib_backpatch_count[j][0];
 	Fnode ***local_rightsib_backpatch_stack = rightsib_backpatch_stack[j];
 	for (int i = 0; i < local_rightsib_backpatch_count; i++)
@@ -1547,7 +1551,7 @@ int FP_tree::FP_growth_first(FSout* fout) {
 
 			FP_tree *fptree;
 			fptree = (FP_tree*) local_fp_buf->newbuf(1, sizeof(FP_tree));
-			fptree->init(this->itemno, new_item_no, thread);
+			fptree->init(this->itemno, new_item_no, thread, pManager);
 
 			MB2 = local_fp_tree_buf->bufmark(&MR2, &MC2);
 			fptree->MB_tree = MB2;
@@ -1653,7 +1657,7 @@ int FP_tree::FP_growth(int thread, FSout* fout) {
 
 		FP_tree *fptree;
 		fptree = (FP_tree*) local_fp_buf->newbuf(1, sizeof(FP_tree));
-		fptree->init(this->itemno, new_item_no, thread);
+		fptree->init(this->itemno, new_item_no, thread, pManager);
 
 		MB2 = local_fp_tree_buf->bufmark(&MR2, &MC2);
 		fptree->MB_tree = MB2;
@@ -1707,3 +1711,8 @@ int FP_tree::unlockmutex() {
 	return pthread_mutex_unlock(&a_mutex);
 }
 
+FP_tree::~FP_tree()
+{
+	/*delete root;	delete []order;	delete []table;*/
+	pthread_mutex_destroy(&a_mutex);
+}

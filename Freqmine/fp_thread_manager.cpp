@@ -32,6 +32,7 @@ void* ManageFunction(void* argv)
 
 		printf("call the job function.\n");
 		pManager->runJobFunction(nWork);
+		printf("Job done.\n");
 		//terminate if job queue is empty (so far)
 		if(pManager->isJobEmpty()){
 			pManager->setTerminate();
@@ -51,6 +52,26 @@ FPThreadManager::FPThreadManager(int (*threadFuction)(int), int nMaxThreadCnt) {
 	threads_terminate = false;
 
 	m_threadFuction = threadFuction;
+	data = NULL;
+
+	for(int i=0; i<nMaxThreadCnt; i++)
+	{
+		//Create CThread with the ManageFunction and the current CThreadManager
+		FPThread* pThread = new FPThread(ManageFunction, this);
+		printf("A new thread started.\n");
+		m_threadList.push_back(pThread);
+	}
+}
+
+FPThreadManager::FPThreadManager(int (*threadFuction)(int), int nMaxThreadCnt, void* pData) {
+
+	sem_init(&m_sem, 0, 0);
+	pthread_mutex_init(&m_mutex, NULL);
+	pthread_mutex_init(&t_mutex, NULL);
+	threads_terminate = false;
+
+	m_threadFuction = threadFuction;
+	data = pData;
 
 	for(int i=0; i<nMaxThreadCnt; i++)
 	{
@@ -66,6 +87,21 @@ FPThreadManager::~FPThreadManager()
 	sem_destroy(&m_sem);
 	pthread_mutex_destroy(&m_mutex);
 	pthread_mutex_destroy(&t_mutex);
+}
+
+void FPThreadManager::setFunction(int (*threadFuction)(int))
+{
+	m_threadFuction = threadFuction;
+}
+
+void FPThreadManager::setParameter(void* pData)
+{
+	data = pData;
+}
+
+void FPThreadManager::setCounter(int count)
+{
+
 }
 
 //check if thread pool is terminated

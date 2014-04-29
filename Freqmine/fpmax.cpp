@@ -49,6 +49,7 @@ THE POSSIBILITY OF SUCH DAMAGE.
 #include <time.h>
 #include <sys/time.h>
 #include "common.h"
+#include "pthread_constants.h"
 
 using namespace std;
 
@@ -88,6 +89,8 @@ memory** fp_tree_buf;
 memory* database_buf;
 int **new_data_num;
 
+FPThreadManager* pthreadManager;
+
 void printLen()
 {
 	int i, j;
@@ -107,6 +110,10 @@ int main(int argc, char **argv)
 	int workingthread=omp_get_max_threads();
 	int i;
 	FP_tree* fptree;
+
+	//Create an instance of the Thread Pool
+	pthreadManager = new FPThreadManager(NULL,
+				WORKING_PTHREADS);
 
 #ifdef PARSEC_VERSION
 #define __PARSEC_STRING(x) #x
@@ -144,7 +151,7 @@ int main(int argc, char **argv)
 	}
 	database_buf=new memory(60, 4194304L, 4194304L, 2);
 	fptree = (FP_tree*)fp_buf[0]->newbuf(1, sizeof(FP_tree));
-	fptree->init(-1, 0, 0);
+	fptree->init(-1, 0, 0, pthreadManager);
 #ifdef ENABLE_PARSEC_HOOKS
 	__parsec_roi_begin();
 #endif
@@ -205,5 +212,8 @@ int main(int argc, char **argv)
 	__parsec_bench_end();
 #endif
 	
+	//Destroy the Thread Pool
+	pthreadManager->~FPThreadManager();
+
 	return 0;
 }

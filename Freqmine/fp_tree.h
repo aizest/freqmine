@@ -40,10 +40,9 @@ THE POSSIBILITY OF SUCH DAMAGE.
 #include "data.h"
 #include "fp_node.h"
 #include "fsout.h"
+#include "fp_thread_manager.h"
 
 #define SORTHRESH 9
-
-int scan2_DB_parallel_2(int j);
   
 class FP_tree {
 public:
@@ -66,6 +65,7 @@ public:
 	char** MB_nodes;
 	int num_hot_item;
 	pthread_mutex_t a_mutex; // Mutex to protect the application block
+	FPThreadManager* pManager;
 
 private:
 	void scan1_DB(int,FP_tree*, int);			//build header_table
@@ -75,8 +75,8 @@ private:
 	void release_node_array_before_mining(int sequence, int thread, int workingthread);
 	void database_tiling(int workingthread);
 public:
-	void init(int Itemno, int new_item_no, int thread);
-	~FP_tree(){/*delete root;	delete []order;	delete []table;*/};
+	void init(int Itemno, int new_item_no, int thread, FPThreadManager* threadManager);
+	~FP_tree();
 
 	void scan1_DB(Data*);		//find the count of all nodes from origional DB
 	void scan2_DB(int workingthread);
@@ -89,6 +89,7 @@ public:
 	int lockMutex();
 	int unlockmutex();
 	int scan2_DB_parallel_1(int j,Fnode **local_hashtable);
+	int scan2_DB_parallel_2(int j);
 };
 
 
@@ -102,6 +103,10 @@ public:
 	stack(int);
 	~stack();
 	void insert(FP_tree* fptree);
+};
+
+struct Scan2_DB_Struct{
+	Fnode **local_hashtable;
 };
 
 #endif
