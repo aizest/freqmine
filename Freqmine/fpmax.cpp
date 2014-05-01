@@ -143,10 +143,12 @@ int main(int argc, char **argv)
 	}
 
 	//Create an instance of the Thread Pool
+	printf("a");
 	pthreadManager = new FPThreadManager(WORKING_PTHREADS);
+	printf("a0");
 
 	wtime(&tstart);
-	printf("a");
+
 	fp_buf = new memory * [workingthread];
 	fp_tree_buf = new memory * [workingthread];
 	for (i = 0; i < workingthread; i ++) {
