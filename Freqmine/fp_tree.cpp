@@ -1167,7 +1167,7 @@ void FP_tree::scan1_DB(Data* fdat) {
 	int *counts;
 	printf("scan1-0\n");
 	unsigned long thread = (unsigned long)pthread_self();//omp_get_thread_num();
-	printf("scan1-1\n");
+	printf("scan1-1: %lu\n", thread);
 	mapfile = (MapFile*) database_buf->newbuf(1, sizeof(MapFile));
 	mapfile->first = NULL;
 
