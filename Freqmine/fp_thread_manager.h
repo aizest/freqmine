@@ -11,7 +11,7 @@
 #include <semaphore.h>
 
 #include "fp_thread.h"
-#include "ThreadJob.h"
+#include "threadjob.h"
 
 using namespace std;
 
@@ -23,7 +23,7 @@ private:
 	pthread_mutex_t t_mutex; // protect threads_terminate
 
 	bool threads_terminate;	//notify the termination of thread pools
-	int m_nthreads;	//number of threads in thread pool
+	int m_nthreads;	//number of threads in thread size
 
 	//queue<int> m_jobQueue; // job queue
 	queue<ThreadJob*> m_jobQueue;

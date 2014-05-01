@@ -34,9 +34,7 @@ void* ManageFunction(void* argv)
 		printf("call the job function.\n");
 		//pManager->runJobFunction(nWork);
 		nJob->fresult = nJob->func(nJob->fdata);
-
 		free(nJob);	//is this safe????????????????????????????????
-
 		//terminate if job queue is empty (so far)
 		if(pManager->isJobEmpty()){
 			pManager->setTerminate();
@@ -47,7 +45,7 @@ void* ManageFunction(void* argv)
 	return NULL;
 }
 
-//FPThreadManager::FPThreadManager()
+
 FPThreadManager::FPThreadManager(int nMaxThreadCnt)
 {
 

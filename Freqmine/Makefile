@@ -36,8 +36,8 @@ fp_thread_manager.o: fp_thread_manager.cpp fp_thread_manager.h
 fp_thread.o: fp_thread.cpp fp_thread.h
 	$(CXX) $(CXXFLAGS) -c fp_thread.cpp
 	
-threadjob.o: ThreadJob.cpp ThreadJob.h
-	$(CXX) $(CXXFLAGS) -c ThreadJob.cpp
+threadjob.o: threadjob.cpp threadjob.h
+	$(CXX) $(CXXFLAGS) -c threadjob.cpp
 
 #thread_test.o: thread_test.cpp
 	#$(CXX) $(CXXFLAGS) -c thread_test.cpp
