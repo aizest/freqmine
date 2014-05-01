@@ -143,9 +143,9 @@ int main(int argc, char **argv)
 	}
 
 	//Create an instance of the Thread Pool
-	printf("a");
+	printf("a\n");
 	pthreadManager = new FPThreadManager(WORKING_PTHREADS);
-	printf("a0");
+	printf("a0\n");
 
 	wtime(&tstart);
 
@@ -161,10 +161,10 @@ int main(int argc, char **argv)
 #ifdef ENABLE_PARSEC_HOOKS
 	__parsec_roi_begin();
 #endif
-	printf("a1");
+	printf("a1\n");
 	fptree -> scan1_DB(fdat);
 	wtime(&tdatap);
-	printf("a2");
+	printf("a2\n");
 	fptree->scan2_DB(workingthread);
 	fdat->close();
 	if(fptree->itemno==0)return 0;
@@ -193,7 +193,7 @@ int main(int argc, char **argv)
 		printLen();
 		return 0;
 	}
-	printf("a3");
+	printf("a3\n");
 	fptree->FP_growth_first(fout);
 #ifdef ENABLE_PARSEC_HOOKS
 	__parsec_roi_end();
