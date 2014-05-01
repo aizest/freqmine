@@ -2,12 +2,12 @@ PREFIX=${PARSECDIR}/pkgs/apps/freqmine/inst/${PARSECPLAT}
 
 TARGET = freqmine
 
-CXXFLAGS += -Wno-deprecated -fopenmp
+CXXFLAGS += -Wno-deprecated -v
 
 all: $(TARGET)
 
-$(TARGET): fpgrowth.o data.o fp_tree.o buffer.o fsout.o fp_node.o wtime.o fp_thread_manager.o fp_thread.o thread_test.o
-	$(CXX) $(CXXFLAGS) $(LDFLAGS) fpgrowth.o data.o fp_tree.o buffer.o fsout.o fp_node.o wtime.o fp_thread_manager.o fp_thread.o thread_test.o -lpthread $(LIBS) -o $(TARGET)
+$(TARGET): fpgrowth.o data.o fp_tree.o buffer.o fsout.o fp_node.o wtime.o fp_thread_manager.o fp_thread.o threadjob.o
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) fpgrowth.o data.o fp_tree.o buffer.o fsout.o fp_node.o wtime.o fp_thread_manager.o fp_thread.o threadjob.o -lpthread $(LIBS) -o $(TARGET)
 
 wtime.o: wtime.cpp wtime.h
 	$(CXX) $(CXXFLAGS) -c wtime.cpp -o wtime.o
@@ -35,9 +35,12 @@ fp_thread_manager.o: fp_thread_manager.cpp fp_thread_manager.h
 	
 fp_thread.o: fp_thread.cpp fp_thread.h
 	$(CXX) $(CXXFLAGS) -c fp_thread.cpp
+	
+threadjob.o: ThreadJob.cpp ThreadJob.h
+	$(CXX) $(CXXFLAGS) -c ThreadJob.cpp
 
-thread_test.o: thread_test.cpp
-	$(CXX) $(CXXFLAGS) -c thread_test.cpp
+#thread_test.o: thread_test.cpp
+	#$(CXX) $(CXXFLAGS) -c thread_test.cpp
 
 clean:
 	rm -f *.o $(TARGET)

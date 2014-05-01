@@ -1,4 +1,3 @@
-#include <cstdlib>
 #include "fp_thread_manager.h"
 
 //A wrapper function, which will run the business job function.
@@ -6,7 +5,7 @@
 void* ManageFunction(void* argv)
 {
 	FPThreadManager* pManager = (FPThreadManager*)argv;
-	ThreadJob* nJob;
+	int nWork;
 
 	//the thread will be re-used until all the jobs are done
 	while(true)
@@ -26,17 +25,14 @@ void* ManageFunction(void* argv)
 			continue;
 		}else
 		{
-			nJob = pManager->popJob();
+			nWork = pManager->popJob();
 		}
 		pManager->unlockMutex();
 
 
 		printf("call the job function.\n");
-		//pManager->runJobFunction(nWork);
-		nJob->fresult = nJob->func(nJob->fdata);
-
-		free(nJob);	//is this safe????????????????????????????????
-
+		pManager->runJobFunction(nWork);
+		printf("Job done.\n");
 		//terminate if job queue is empty (so far)
 		if(pManager->isJobEmpty()){
 			pManager->setTerminate();
@@ -44,21 +40,40 @@ void* ManageFunction(void* argv)
 	}
 
 	printf("thread terminate.\n");
-	return NULL;
+	return 0;
 }
 
-//FPThreadManager::FPThreadManager()
-FPThreadManager::FPThreadManager(int nMaxThreadCnt)
-{
+
+FPThreadManager::FPThreadManager(int (*threadFuction)(FP_tree*, int), int nMaxThreadCnt) {
 
 	sem_init(&m_sem, 0, 0);
 	pthread_mutex_init(&m_mutex, NULL);
 	pthread_mutex_init(&t_mutex, NULL);
 	threads_terminate = false;
 
-	//m_threadFuction = threadFuction;
-	m_nthreads = nMaxThreadCnt;
-	for(int i=0; i<m_nthreads; i++)
+	m_threadFuction = threadFuction;
+	data = NULL;
+
+	for(int i=0; i<nMaxThreadCnt; i++)
+	{
+		//Create CThread with the ManageFunction and the current CThreadManager
+		FPThread* pThread = new FPThread(ManageFunction, this);
+		printf("A new thread started.\n");
+		m_threadList.push_back(pThread);
+	}
+}
+
+FPThreadManager::FPThreadManager(int (*threadFuction)(FP_tree*, int), int nMaxThreadCnt, void* pData) {
+
+	sem_init(&m_sem, 0, 0);
+	pthread_mutex_init(&m_mutex, NULL);
+	pthread_mutex_init(&t_mutex, NULL);
+	threads_terminate = false;
+
+	m_threadFuction = threadFuction;
+	data = pData;
+
+	for(int i=0; i<nMaxThreadCnt; i++)
 	{
 		//Create CThread with the ManageFunction and the current CThreadManager
 		FPThread* pThread = new FPThread(ManageFunction, this);
@@ -72,6 +87,26 @@ FPThreadManager::~FPThreadManager()
 	sem_destroy(&m_sem);
 	pthread_mutex_destroy(&m_mutex);
 	pthread_mutex_destroy(&t_mutex);
+}
+
+void FPThreadManager::setFunction(int (*threadFuction)(FP_tree*, int))
+{
+	m_threadFuction = threadFuction;
+}
+
+void FPThreadManager::setFPTree(FP_tree* fpTree)
+{
+	tree = fpTree;
+}
+
+void FPThreadManager::setParameter(void* pData)
+{
+	data = pData;
+}
+
+void FPThreadManager::setCounter(int count)
+{
+
 }
 
 //check if thread pool is terminated
@@ -147,9 +182,9 @@ int FPThreadManager::unlockTMutex()
 }
 
 // Push job data into the queue
-void FPThreadManager::pushJob(ThreadJob* newJob)
+void FPThreadManager::pushJob(int jobData)
 {
-	m_jobQueue.push(newJob);
+	m_jobQueue.push(jobData);
 }
 
 // check if the job queue is empty, return true if job queue is empty
@@ -159,29 +194,16 @@ bool FPThreadManager::isJobEmpty()
 }
 
 // Pop a job data out of the job queue
-ThreadJob* FPThreadManager::popJob()
+int FPThreadManager::popJob()
 {
-	ThreadJob* nJob = m_jobQueue.front();
+	int nWork = m_jobQueue.front();
 	m_jobQueue.pop();
 
-	return nJob;
+	return nWork;
 }
 
 // Run the job function (specified by the constructor) with the specified job data
-/*
 int FPThreadManager::runJobFunction(int nWork)
 {
-	return (*m_threadFuction)(nWork);
-}*/
-
-//return size of threadpool, number of threads
-int FPThreadManager::getSize()
-{
-	return m_nthreads;
-}
-
-//increase the size of threadpool
-bool FPThreadManager::incrementSize(int incNum)
-{
-	return true;
+	return (*m_threadFuction)(tree, nWork);
 }

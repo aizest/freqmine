@@ -68,11 +68,11 @@ public:
 	FPThreadManager* pManager;
 
 private:
-	void scan1_DB(int,FP_tree*, int);			//build header_table
+	//void scan1_DB(int,FP_tree*, int);			//build header_table
 	int cal_level_25(int);
 	void powerset(int*, int, int*, int, int, FSout*, int)const;
-	void release_node_array_after_mining(int sequence, int thread, int workingthread);
-	void release_node_array_before_mining(int sequence, int thread, int workingthread);
+	//void release_node_array_after_mining(int sequence, int thread, int workingthread);
+	//void release_node_array_before_mining(int sequence, int thread, int workingthread);
 	void database_tiling(int workingthread);
 public:
 	void init(int Itemno, int new_item_no, int thread, FPThreadManager* threadManager);
@@ -90,6 +90,10 @@ public:
 	int unlockmutex();
 	int scan2_DB_parallel_1(int j,Fnode **local_hashtable);
 	int scan2_DB_parallel_2(int j);
+
+	void scan1_DB(int,FP_tree*, int);			//build header_table
+	void release_node_array_after_mining(int sequence, int thread, int workingthread);
+	void release_node_array_before_mining(int sequence, int thread, int workingthread);
 };
 
 
@@ -105,11 +109,12 @@ public:
 	void insert(FP_tree* fptree);
 };
 
+/*
 struct Scan2_DB_Struct{
 	Fnode **local_hashtable;
-};
+};*/
 
-int scan2_DB_parallel_1_wrapper(FP_tree * fp_tree, int j);
+//int scan2_DB_parallel_1_wrapper(FP_tree * fp_tree, int j);
 
 #endif
 

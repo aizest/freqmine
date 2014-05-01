@@ -1,5 +1,5 @@
 #ifndef FPTHREADMANAGER_H_
-#define FPTHREADMANAGER_H_
+#define FPHREADMANAGER_H_
 
 #include <stdio.h>
 
@@ -11,9 +11,11 @@
 #include <semaphore.h>
 
 #include "fp_thread.h"
-#include "ThreadJob.h"
+//#include "fp_tree.h"
 
 using namespace std;
+
+class FP_tree;
 
 class FPThreadManager {
 	friend void* ManageFunction(void*);
@@ -22,18 +24,20 @@ private:
 	pthread_mutex_t m_mutex; // Mutex to protect the job queue
 	pthread_mutex_t t_mutex; // protect threads_terminate
 
-	bool threads_terminate;	//notify the termination of thread pools
-	int m_nthreads;	//number of threads in thread pool
+	void* data; //a pointer to the struct which stores the parameters of the function
+	FP_tree *tree;
 
-	//queue<int> m_jobQueue; // job queue
-	queue<ThreadJob*> m_jobQueue;
+	bool threads_terminate;	//notify the termination of thread pools
+
+	queue<int> m_jobQueue; // job queue
 	list<FPThread*> m_threadList; // thread list
 
-	//int (*m_threadFuction)(int); //pointer of job function
+	int (*m_threadFuction)(FP_tree*, int); //pointer of job function
 
 
 public:
-	FPThreadManager(int nMaxThreadCnt);
+	FPThreadManager(int (*threadFuction)(FP_tree*, int), int nMaxThreadCnt);
+	FPThreadManager(int (*threadFuction)(FP_tree*, int), int nMaxThreadCnt, void* data);
 	virtual ~FPThreadManager();
 
 	int joinAllThreads();
@@ -56,15 +60,19 @@ public:
 
 	int unlockMutex();
 
-	void pushJob(ThreadJob* newJob);
+	void pushJob(int nWork);
 
-	ThreadJob* popJob();
+	int popJob();
 
-	//int runJobFunction(int nWork);
+	int runJobFunction(int nWork);
 
-	int getSize();
+	void setFunction(int (*threadFuction)(FP_tree*, int));
 
-	bool incrementSize(int incNum);
+	void setParameter(void* pData);
+
+	void setCounter(int count);
+
+	void setFPTree(FP_tree* fpTree);
 };
 
 #endif

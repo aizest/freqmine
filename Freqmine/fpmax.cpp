@@ -55,6 +55,7 @@ using namespace std;
 
 #include "buffer.h"
 
+/*
 #ifdef _OPENMP
 #include <omp.h>
 #else
@@ -64,6 +65,7 @@ static int omp_get_max_threads() {return 1;}
 #ifdef ENABLE_PARSEC_HOOKS
 #include <hooks.h>
 #endif
+*/
 
 #define LINT sizeof(int)
 
@@ -94,7 +96,7 @@ FPThreadManager* pthreadManager;
 void printLen()
 {
 	int i, j;
-	int workingthread=omp_get_max_threads(); 
+	int workingthread=WORKING_PTHREADS;//omp_get_max_threads();
 
 	for (j = 1; j < workingthread; j ++)
 		for (i = 0; i < ITEM_NO; i ++)
@@ -107,13 +109,12 @@ void printLen()
 int main(int argc, char **argv)
 {
 	double tstart, tdatap, tend;
-	int workingthread=omp_get_max_threads();
+	int workingthread=WORKING_PTHREADS;//omp_get_max_threads();
 	int i;
 	FP_tree* fptree;
 
 	//Create an instance of the Thread Pool
-	pthreadManager = new FPThreadManager(NULL,
-				WORKING_PTHREADS);
+	pthreadManager = new FPThreadManager(WORKING_PTHREADS);
 
 #ifdef PARSEC_VERSION
 #define __PARSEC_STRING(x) #x
