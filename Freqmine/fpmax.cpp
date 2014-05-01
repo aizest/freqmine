@@ -146,6 +146,7 @@ int main(int argc, char **argv)
 	pthreadManager = new FPThreadManager(WORKING_PTHREADS);
 
 	wtime(&tstart);
+	printf("a");
 	fp_buf = new memory * [workingthread];
 	fp_tree_buf = new memory * [workingthread];
 	for (i = 0; i < workingthread; i ++) {
@@ -158,9 +159,10 @@ int main(int argc, char **argv)
 #ifdef ENABLE_PARSEC_HOOKS
 	__parsec_roi_begin();
 #endif
+	printf("a1");
 	fptree -> scan1_DB(fdat);
 	wtime(&tdatap);
-
+	printf("a2");
 	fptree->scan2_DB(workingthread);
 	fdat->close();
 	if(fptree->itemno==0)return 0;
@@ -189,7 +191,7 @@ int main(int argc, char **argv)
 		printLen();
 		return 0;
 	}
-
+	printf("a3");
 	fptree->FP_growth_first(fout);
 #ifdef ENABLE_PARSEC_HOOKS
 	__parsec_roi_end();
