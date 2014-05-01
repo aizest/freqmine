@@ -334,6 +334,8 @@ template<class T> void first_transform_FPTree_into_FPArray(FP_tree *fptree,
 	new_data_num[0][0] = sum_new_data_num;
 	T *ItemArray = (T *) local_buf->newbuf(1, new_data_num[0][0] * sizeof(T));
 
+	printf("this is 2\n");
+
 	for (j = 0; j < workingthread; j++) {
 		//threads
 		ThreadJob* tj = new ThreadJob((void*)(new struct ftrans_fp_tree2array_para<T>(fptree, j, node_offset_array, content_offset_array, mark, ItemArray)), NULL, ftrans_fp_tree2array<T>);//should we release them
@@ -828,6 +830,8 @@ void FP_tree::database_tiling(int workingthread) {
 			origin[i][j] = 1;
 	}
 
+	printf("this is 3\n");
+
 	for (i = 0; i < mapfile->tablesize; i++) {
 		//threads
 		ThreadJob* tj = new ThreadJob((void*)(new _db_tiling_func1_para(i, thread_pos, local_num_hot_item, local_itemno)), NULL, db_tiling_func1);//should we release them
@@ -1023,6 +1027,8 @@ void FP_tree::database_tiling(int workingthread) {
 				tempntypeoffsetbase[i] += ntypearray[j][i];
 			}
 		}
+
+	printf("this is 4\n");
 
 	for (i = 0; i < workingthread; i++) {
 		//threads
@@ -1284,6 +1290,8 @@ void FP_tree::scan1_DB(Data* fdat) {
 		hot_node_index[i] = j;
 	}
 	hot_node_depth[0] = 0;
+
+	printf("this is 5\n");
 
 	for(int k = 0; k < WORKING_PTHREADS; k++) {
 		//add jobs to thread pool
@@ -1638,6 +1646,9 @@ void FP_tree::scan2_DB(int workingthread) {
 	wtime(&tstart);
 	database_tiling(workingthread);
 	Fnode **local_hashtable = hashtable[0];
+
+	printf("this is 6\n");
+
 	for (j = 0; j < mergedworknum; j++) {
 		//add jobs to job queue
 		ThreadJob* tj = new ThreadJob((void*)(new fp_scan2_db_fun1_para(this, j, local_hashtable)), NULL, fp_scan2_db_func1);//should we release them
@@ -1759,6 +1770,8 @@ void FP_tree::scan2_DB(int workingthread) {
 		threadworkloadnum[thread] = localthreadworkloadnum;
 	}*/
 	delete database_buf;
+
+	printf("this is 7\n");
 
 	for (int i = 0; i < workingthread; i++) {
 		int temp = 0;
@@ -2233,6 +2246,7 @@ int FP_tree::FP_growth_first(FSout* fout) {
 			}
 		}
 /////////
+		printf("this is 1\n");
 		for (sequence = upperbound - 1; sequence >= lowerbound; sequence--) {
 			//threads
 			ThreadJob* tj = new ThreadJob((void*)(new fp_growth_first_func_para(this, fout, sequence, function_type)), NULL, fp_growth_first_func);//should we release them
