@@ -15,6 +15,15 @@
 
 using namespace std;
 
+typedef struct _threadPara{
+	int tId;
+	void* tData;
+	_threadPara(int _tId, void* _tData){
+		tId = _tId;
+		tData = _tData;
+	}
+}threadPara;
+
 class FPThreadManager {
 	friend void* ManageFunction(void*);
 private:
@@ -35,6 +44,8 @@ private:
 public:
 	FPThreadManager(int nMaxThreadCnt);
 	virtual ~FPThreadManager();
+
+	//static void* ManageFunction(void* argv);
 
 	int joinAllThreads();
 

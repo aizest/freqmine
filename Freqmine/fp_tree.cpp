@@ -208,7 +208,7 @@ template<class T> struct ftrans_fp_tree2array_para{
 //ftrans_fp_tree2array
 template<class T> void* ftrans_fp_tree2array(void* fdata)
 {
-	struct ftrans_fp_tree2array_para<T>* trans_para = (struct ftrans_fp_tree2array_para<T>*) fdata;
+	struct ftrans_fp_tree2array_para<T>* trans_para = (struct ftrans_fp_tree2array_para<T>*) ((threadPara*)fdata)->tData;
 	FP_tree* fptree = trans_para->trans_tree;
 	int j = trans_para->iter;
 	int** node_offset_array = trans_para->NOffsetArray;
@@ -672,7 +672,7 @@ typedef struct _db_tiling_func1_para{
 void* db_tiling_func1(void* fdata)
 {
 	//
-	db_tiling_func1_para* tiling_f1para = (db_tiling_func1_para*) fdata;
+	db_tiling_func1_para* tiling_f1para = (db_tiling_func1_para*) ((threadPara*)fdata)->tData;
 	int i = tiling_f1para->db_func1_iter;
 	int *thread_pos = tiling_f1para->db_func1_tpos;
 	int local_num_hot_item = tiling_f1para->db_func1_lmhi;
@@ -686,7 +686,7 @@ void* db_tiling_func1(void* fdata)
 	int size;
 	unsigned short *newcontent;
 	int currentpos;
-	unsigned long thread = (unsigned long)pthread_self();
+	int thread = ((threadPara*)fdata)->tId;
 	int *local_origin = origin[thread];
 	int *local_ntype = ntypearray[thread];
 	int ntype;
@@ -782,7 +782,7 @@ void* db_tiling_func1(void* fdata)
 void* db_tiling_func2(void* fdata)
 {
 	//
-	int* temInt = (int*) fdata;
+	int* temInt = (int*) ((threadPara*)fdata)->tData;
 	int i = *temInt;
 
 	MapFileNode *current_mapfilenode;
@@ -1088,7 +1088,7 @@ typedef struct _fp_scan1_DB_para{
 //thread run function for fp_tree::scan1_DB()
 void* fp_scan1_DB(void* fdata)
 {
-	fp_scan1_DB_para* fpscan1 = (fp_scan1_DB_para*) fdata;
+	fp_scan1_DB_para* fpscan1 = (fp_scan1_DB_para*) ((threadPara*)fdata)->tData;
 	FP_tree* mFPTree = fpscan1->scan1_tree;
 	int num_hot_node = fpscan1->scan1_NumHotNode;
 	int k = fpscan1->iter;	//get thread id, for partitioning input data
@@ -1166,8 +1166,8 @@ void FP_tree::scan1_DB(Data* fdat) {
 	int i, j;
 	int *counts;
 	printf("scan1-0\n");
-	unsigned long thread = (unsigned long)pthread_self();//omp_get_thread_num();
-	printf("scan1-1: %lu\n", thread);
+	int thread = 0;//this should always be 0 //(unsigned long)pthread_self();//omp_get_thread_num();
+	printf("scan1-1: %d\n", thread);
 	mapfile = (MapFile*) database_buf->newbuf(1, sizeof(MapFile));
 	mapfile->first = NULL;
 
@@ -1507,10 +1507,10 @@ typedef struct _fp_scan2_db_fun1_para{
 void* fp_scan2_db_func1(void* fdata)
 {
 	//replace the first omp block in scan2_db
-	fp_scan2_db_fun1_para* scan2_func1_para = (fp_scan2_db_fun1_para*) fdata;
+	fp_scan2_db_fun1_para* scan2_func1_para = (fp_scan2_db_fun1_para*) ((threadPara*) fdata)->tData;
 	int j = scan2_func1_para->iter;
 	Fnode **local_hashtable = scan2_func1_para->scan2_localhashtable1;
-	unsigned long thread = (unsigned long)pthread_self();
+	int thread = ((threadPara*) fdata)->tId;
 	int localthreadworkloadnum = threadworkloadnum[thread];
 	int *localthreadworkload = threadworkload[thread];
 	int has, ntype;
@@ -1629,7 +1629,7 @@ void* fp_scan2_db_func1(void* fdata)
 //fp_tree::scan_DB thread run function 2
 void* fp_scan2_db_func2(void* fdata)
 {
-	int* temInt = (int*)fdata;
+	int* temInt = (int*) ((threadPara*) fdata)->tData;
 	int j = *temInt;
 	int local_rightsib_backpatch_count = rightsib_backpatch_count[j][0];
 	Fnode ***local_rightsib_backpatch_stack = rightsib_backpatch_stack[j];
@@ -2093,7 +2093,7 @@ typedef struct _fp_growth_first_func_para{
 //fp_tree::fp_growth_first_func
 void* fp_growth_first_func(void* fdata)
 {
-	fp_growth_first_func_para * growth_para = (fp_growth_first_func_para*) fdata;
+	fp_growth_first_func_para * growth_para = (fp_growth_first_func_para*) ((threadPara*) fdata)->tData;
 	int sequence = growth_para->growth_seq;
 	FP_tree* myfptree = growth_para->growth_fptree;
 	FSout* fout = growth_para->growth_fout;
@@ -2103,7 +2103,7 @@ void* fp_growth_first_func(void* fdata)
 	int MC2 = 0;
 	unsigned int MR2 = 0;
 	char* MB2;
-	unsigned long thread = (unsigned long)pthread_self();
+	int thread = ((threadPara*) fdata)->tId;
 	//release_node_array_before_mining(sequence, thread, workingthread); remove due to data race
 	memory *local_fp_tree_buf = fp_tree_buf[thread];
 	memory *local_fp_buf = fp_buf[thread];

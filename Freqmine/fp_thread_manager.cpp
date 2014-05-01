@@ -1,8 +1,69 @@
 #include <cstdlib>
 #include "fp_thread_manager.h"
 
+typedef struct _mrgfuncPara{
+	void* tMrg;	//point to parent manager
+	int t_Id;	//assigned id to the thread
+	_mrgfuncPara(void* _tMrg, int _t_Id){
+		tMrg = _tMrg;
+		t_Id = _t_Id;
+	}
+}mrgfuncPara;
+
 //A wrapper function, which will run the business job function.
 //A pthread will be created for this function
+void* ManageFunction(void* argv)
+{
+	mrgfuncPara* fpara = (mrgfuncPara*) argv;
+	FPThreadManager* pManager = (FPThreadManager*)fpara->tMrg;
+	//int threadId = *((int*) argv);
+	threadPara* tPara = new threadPara(fpara->t_Id, NULL);
+	ThreadJob* nJob;
+
+	//the thread will be re-used until all the jobs are done
+	while(true)
+	{
+		//The thread is blocked until being waken up
+		pManager->waitSemaphore();
+		if(pManager->isTerminated())
+			break;
+
+		printf("thread wakeup.\n");
+
+		//Get a job from the job queue
+		pManager->lockMutex();
+		if(pManager->isJobEmpty())
+		{
+			printf("thread: no job to pop!\n");
+			continue;
+		}else
+		{
+			nJob = pManager->popJob();
+		}
+		pManager->unlockMutex();
+
+
+		printf("call the job function.\n");
+		//pManager->runJobFunction(nWork);
+		tPara->tData = nJob->fdata;
+		nJob->fresult = nJob->func((void*) tPara);
+		free(tPara->tData);	//is this safe????????????????????????????????
+		tPara->tData = NULL;
+		//terminate if job queue is empty (so far)
+		if(pManager->isJobEmpty()){
+			pManager->setTerminate();
+		}
+	}
+
+	free(tPara);
+
+	printf("thread terminate.\n");
+	return NULL;
+}
+
+//A wrapper function, which will run the business job function.
+//A pthread will be created for this function
+/*
 void* ManageFunction(void* argv)
 {
 	FPThreadManager* pManager = (FPThreadManager*)argv;
@@ -43,7 +104,7 @@ void* ManageFunction(void* argv)
 
 	printf("thread terminate.\n");
 	return NULL;
-}
+}*/
 
 
 FPThreadManager::FPThreadManager(int nMaxThreadCnt)
@@ -59,7 +120,8 @@ FPThreadManager::FPThreadManager(int nMaxThreadCnt)
 	for(int i=0; i<m_nthreads; i++)
 	{
 		//Create CThread with the ManageFunction and the current CThreadManager
-		FPThread* pThread = new FPThread(ManageFunction, this);
+		mrgfuncPara* mfpara = new mrgfuncPara((void*)this, i);
+		FPThread* pThread = new FPThread(ManageFunction, (void *)mfpara);
 		printf("A new thread started.\n");
 		m_threadList.push_back(pThread);
 	}
