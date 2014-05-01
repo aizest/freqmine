@@ -113,8 +113,7 @@ int main(int argc, char **argv)
 	int i;
 	FP_tree* fptree;
 
-	//Create an instance of the Thread Pool
-	pthreadManager = new FPThreadManager(WORKING_PTHREADS);
+
 
 #ifdef PARSEC_VERSION
 #define __PARSEC_STRING(x) #x
@@ -142,6 +141,9 @@ int main(int argc, char **argv)
 		cerr << argv[1] << " could not be opened!" << endl;
 		exit(2);
 	}
+
+	//Create an instance of the Thread Pool
+	pthreadManager = new FPThreadManager(WORKING_PTHREADS);
 
 	wtime(&tstart);
 	fp_buf = new memory * [workingthread];
