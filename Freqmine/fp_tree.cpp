@@ -336,15 +336,16 @@ template<class T> void first_transform_FPTree_into_FPArray(FP_tree *fptree,
 
 	printf("this is 2\n");
 
-	/*
+
 	fptree->pManager->cleanResult();
+	printf("this is 2.1\n");
 	for (j = 0; j < workingthread; j++) {
 		//threads
 		ThreadJob* tj = new ThreadJob((void*)(new struct ftrans_fp_tree2array_para<T>(fptree, j, node_offset_array, content_offset_array, mark, ItemArray)), NULL, ftrans_fp_tree2array<T>);//should we release them
 		fptree->pManager->pushJob(tj);
-	}*/
+	}
 
-
+/*
 #pragma omp parallel for
 	for (j = 0; j < workingthread; j++) {
 		//printf("\n\nParallel threads #: %d\n\n",omp_get_num_threads());
@@ -421,7 +422,7 @@ template<class T> void first_transform_FPTree_into_FPArray(FP_tree *fptree,
 				kept_itemiter++;
 			}
 		}
-	}
+	}*/
 	fptree->ItemArray = (int *) ItemArray;
 }
 
