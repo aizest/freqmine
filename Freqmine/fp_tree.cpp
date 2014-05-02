@@ -2104,6 +2104,9 @@ void* fp_growth_first_func(void* fdata)
 	unsigned int MR2 = 0;
 	char* MB2;
 	int thread = ((threadPara*) fdata)->tId;
+
+	printf("thread#%d: 1", thread);
+
 	//release_node_array_before_mining(sequence, thread, workingthread); remove due to data race
 	memory *local_fp_tree_buf = fp_tree_buf[thread];
 	memory *local_fp_buf = fp_buf[thread];
@@ -2144,6 +2147,8 @@ void* fp_growth_first_func(void* fdata)
 		return NULL;
 		//continue;
 	}
+
+	printf("thread#%d: 2", thread);
 
 	FP_tree *fptree;
 	fptree = (FP_tree*) local_fp_buf->newbuf(1, sizeof(FP_tree));
@@ -2188,6 +2193,8 @@ void* fp_growth_first_func(void* fdata)
 		local_list->top = listlen - 1;
 	}
 	myfptree->release_node_array_after_mining(sequence, thread, myfptree->pManager->getSize());
+
+	printf("thread#%d: 3", thread);
 
 	//free(growth_para);
 
