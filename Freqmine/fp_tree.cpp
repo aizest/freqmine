@@ -1158,6 +1158,7 @@ void* fp_scan1_DB(void* fdata)
 	}
 
 	//free(fpscan1);
+	printf("this is 5_01\n");
 
 	return NULL;
 }
@@ -1302,6 +1303,7 @@ void FP_tree::scan1_DB(Data* fdat) {
 		pManager->pushJob(tj);
 	}
 	pManager->isAllCompleted();
+	printf("this is 5.1\n");
 
 /*
 #pragma omp parallel for
