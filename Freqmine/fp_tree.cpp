@@ -835,6 +835,7 @@ void FP_tree::database_tiling(int workingthread) {
 
 
 	pManager->cleanResult();
+	printf("this is 3.1\n");
 	for (i = 0; i < mapfile->tablesize; i++) {
 		//threads
 		ThreadJob* tj = new ThreadJob((void*)(new _db_tiling_func1_para(i, thread_pos, local_num_hot_item, local_itemno)), NULL, db_tiling_func1);//should we release them
@@ -1033,17 +1034,18 @@ void FP_tree::database_tiling(int workingthread) {
 
 	printf("this is 4\n");
 
-	/*
+
 	pManager->cleanResult();
+	printf("this is 4.1\n");
 	for (i = 0; i < workingthread; i++) {
 		//threads
 		int* temi = new int(i);	//will this be released before being used??????????
 		ThreadJob* tj = new ThreadJob((void*)(temi), NULL, db_tiling_func2);//should we release them
 		pManager->pushJob(tj);
 	}
-	pManager->isAllCompleted();*/
+	pManager->isAllCompleted();
 
-
+/*
 #pragma omp parallel for
 	for (i = 0; i < workingthread; i++) {
 		MapFileNode *current_mapfilenode;
@@ -1070,7 +1072,7 @@ void FP_tree::database_tiling(int workingthread) {
 			current_mapfilenode->finalize();
 			current_mapfilenode = current_mapfilenode->next;
 		}
-	}
+	}*/
 	delete[] tempntypeoffsetbase;
 	delete[] thread_pos;
 }
@@ -1298,6 +1300,7 @@ void FP_tree::scan1_DB(Data* fdat) {
 
 
 	pManager->cleanResult();
+	printf("this is 5.1\n");
 	for(int k = 0; k < pManager->getSize(); k++) {
 		//add jobs to thread pool
 		//fp_scan1_DB_para fp_para1(this, num_hot_node);
@@ -1306,7 +1309,7 @@ void FP_tree::scan1_DB(Data* fdat) {
 	}
 	pManager->isAllCompleted();
 
-	printf("this is 5.1\n");
+
 
 /*
 #pragma omp parallel for
