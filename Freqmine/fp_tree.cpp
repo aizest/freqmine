@@ -2261,6 +2261,7 @@ int FP_tree::FP_growth_first(FSout* fout) {
 		pManager->cleanResult();
 		for (sequence = upperbound - 1; sequence >= lowerbound; sequence--) {
 			//threads
+			printf("this is 1_11\n");
 			ThreadJob* tj = new ThreadJob((void*)(new fp_growth_first_func_para(this, fout, sequence, function_type)), NULL, fp_growth_first_func);//should we release them
 			pManager->pushJob(tj);
 		}
