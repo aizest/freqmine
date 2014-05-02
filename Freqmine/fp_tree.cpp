@@ -1658,15 +1658,17 @@ void FP_tree::scan2_DB(int workingthread) {
 
 	printf("this is 6\n");
 
-	/*
+
 	pManager->cleanResult();
+	printf("this is 6.1\n");
 	for (j = 0; j < mergedworknum; j++) {
 		//add jobs to job queue
 		ThreadJob* tj = new ThreadJob((void*)(new fp_scan2_db_fun1_para(this, j, local_hashtable)), NULL, fp_scan2_db_func1);//should we release them
 		pManager->pushJob(tj);
 	}
-	pManager->isAllCompleted();*/
+	pManager->isAllCompleted();
 
+	/*
 #pragma omp parallel for schedule(dynamic,1)
 	for (j = 0; j < mergedworknum; j++) {
 		int thread = omp_get_thread_num();
@@ -1778,7 +1780,7 @@ void FP_tree::scan2_DB(int workingthread) {
 		}
 		rightsib_backpatch_count[thread][0] = local_rightsib_backpatch_count;
 		threadworkloadnum[thread] = localthreadworkloadnum;
-	}
+	}*/
 	delete database_buf;
 
 	printf("this is 7\n");
