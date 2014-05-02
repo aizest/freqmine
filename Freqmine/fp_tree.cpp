@@ -2224,6 +2224,7 @@ int FP_tree::FP_growth_first(FSout* fout) {
 	int upperbound;
 	if (lowerbound > itemno)
 		lowerbound = itemno;
+
 	for (int t = 0; t < 3; t++) {
 		upperbound = lowerbound;
 		if (upperbound > itemno)
@@ -2254,6 +2255,7 @@ int FP_tree::FP_growth_first(FSout* fout) {
 			ThreadJob* tj = new ThreadJob((void*)(new fp_growth_first_func_para(this, fout, sequence, function_type)), NULL, fp_growth_first_func);//should we release them
 			pManager->pushJob(tj);
 		}
+		printf("this is 1.1\n");
 		pManager->isAllCompleted();
 
 /*
