@@ -2120,6 +2120,9 @@ void* fp_growth_first_func(void* fdata)
 	local_list->FS[local_list->top++] = current;
 	listlen = local_list->top;
 	local_ITlen[local_list->top - 1]++;
+
+	printf("thread#%d: 2\n", thread);
+
 	if (fout)
 		fout->printSet(local_list->top, local_list->FS, myfptree->count[sequence]);
 	if (sequence != 0) {
@@ -2149,8 +2152,6 @@ void* fp_growth_first_func(void* fdata)
 		return NULL;
 		//continue;
 	}
-
-	printf("thread#%d: 2\n", thread);
 
 	FP_tree *fptree;
 	fptree = (FP_tree*) local_fp_buf->newbuf(1, sizeof(FP_tree));
