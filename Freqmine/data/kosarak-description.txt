@@ -1,0 +1,1 @@
+The dataset was provided to us by Ferenc Bodon and contains (anonymized) click-stream data of a hungarian on-line news portal.
