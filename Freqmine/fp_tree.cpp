@@ -833,7 +833,7 @@ void FP_tree::database_tiling(int workingthread) {
 
 	printf("this is 3\n");
 
-	/*
+
 	pManager->cleanResult();
 	for (i = 0; i < mapfile->tablesize; i++) {
 		//threads
@@ -841,9 +841,9 @@ void FP_tree::database_tiling(int workingthread) {
 		pManager->pushJob(tj);
 	}
 	pManager->isAllCompleted();
-	*/
 
 
+/*
 #pragma omp parallel for schedule(dynamic,1)
 	for (i = 0; i < mapfile->tablesize; i++) {
 		//printf("\n\nParallel threads #: %d\n\n",omp_get_num_threads());
@@ -939,7 +939,7 @@ void FP_tree::database_tiling(int workingthread) {
 		newnode->top = currentpos;
 		currentnode->finalize();
 		thread_pos[thread] = currentpos;
-	}
+	}*/
 
 	for (i = 0; i < workingthread; i++) {
 		thread_pos[i] = 0;
@@ -1162,7 +1162,6 @@ void* fp_scan1_DB(void* fdata)
 	}
 
 	//free(fpscan1);
-	printf("this is 5_01\n");
 
 	return NULL;
 }
