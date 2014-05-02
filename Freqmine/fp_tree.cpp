@@ -2123,7 +2123,6 @@ void* fp_growth_first_func(void* fdata)
 
 	if (fout)
 		fout->printSet(local_list->top, local_list->FS, myfptree->count[sequence]);
-	printf("thread#%d: 2\n", thread);
 	if (sequence != 0) {
 		if (function_type == 0)
 			new_item_no = FPArray_conditional_pattern_base(myfptree,
@@ -2151,6 +2150,7 @@ void* fp_growth_first_func(void* fdata)
 		return NULL;
 		//continue;
 	}
+	printf("thread#%d: 2\n", thread);
 
 	FP_tree *fptree;
 	fptree = (FP_tree*) local_fp_buf->newbuf(1, sizeof(FP_tree));
