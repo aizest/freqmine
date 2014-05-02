@@ -2121,10 +2121,9 @@ void* fp_growth_first_func(void* fdata)
 	listlen = local_list->top;
 	local_ITlen[local_list->top - 1]++;
 
-	printf("thread#%d: 2\n", thread);
-
 	if (fout)
 		fout->printSet(local_list->top, local_list->FS, myfptree->count[sequence]);
+	printf("thread#%d: 2\n", thread);
 	if (sequence != 0) {
 		if (function_type == 0)
 			new_item_no = FPArray_conditional_pattern_base(myfptree,
