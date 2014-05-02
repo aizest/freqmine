@@ -334,18 +334,18 @@ template<class T> void first_transform_FPTree_into_FPArray(FP_tree *fptree,
 	new_data_num[0][0] = sum_new_data_num;
 	T *ItemArray = (T *) local_buf->newbuf(1, new_data_num[0][0] * sizeof(T));
 
-	printf("this is 2\n");
+	printf("this is 2, no pthread\n");
 
-
+	/*
 	fptree->pManager->cleanResult();
 	printf("this is 2.1\n");
 	for (j = 0; j < workingthread; j++) {
 		//threads
 		ThreadJob* tj = new ThreadJob((void*)(new struct ftrans_fp_tree2array_para<T>(fptree, j, node_offset_array, content_offset_array, mark, ItemArray)), NULL, ftrans_fp_tree2array<T>);//should we release them
 		fptree->pManager->pushJob(tj);
-	}
+	}*/
 
-/*
+
 #pragma omp parallel for
 	for (j = 0; j < workingthread; j++) {
 		//printf("\n\nParallel threads #: %d\n\n",omp_get_num_threads());
@@ -422,7 +422,7 @@ template<class T> void first_transform_FPTree_into_FPArray(FP_tree *fptree,
 				kept_itemiter++;
 			}
 		}
-	}*/
+	}
 	fptree->ItemArray = (int *) ItemArray;
 }
 
@@ -2021,15 +2021,15 @@ void FP_tree::release_node_array_after_mining(int sequence, int thread,
 	{
 		//Lock needed!
 		//abc;
-		/*
+
 		lockMutex();
 		if (current < released_pos) {
 			released_pos = current;
 			fp_node_sub_buf->freebuf(MR_nodes[current], MC_nodes[current],
 					MB_nodes[current]);
 		}
-		unlockmutex();*/
-
+		unlockmutex();
+/*
 #pragma omp critical
 		{
 			if (current < released_pos) {
@@ -2037,7 +2037,7 @@ void FP_tree::release_node_array_after_mining(int sequence, int thread,
 				fp_node_sub_buf->freebuf(MR_nodes[current], MC_nodes[current],
 						MB_nodes[current]);
 			}
-		}
+		}*/
 	}
 
 }
@@ -2055,15 +2055,15 @@ void FP_tree::release_node_array_before_mining(int sequence, int thread,
 	{
 		//Lock needed!
 		//abc;
-		/*
+
 		lockMutex();
 		if (current < released_pos) {
 			released_pos = current;
 			fp_node_sub_buf->freebuf(MR_nodes[current], MC_nodes[current],
 					MB_nodes[current]);
 		}
-		unlockmutex();*/
-
+		unlockmutex();
+/*
 #pragma omp critical
 		{
 			if (current < released_pos) {
@@ -2071,7 +2071,7 @@ void FP_tree::release_node_array_before_mining(int sequence, int thread,
 				fp_node_sub_buf->freebuf(MR_nodes[current], MC_nodes[current],
 						MB_nodes[current]);
 			}
-		}
+		}*/
 	}
 
 }
@@ -2259,8 +2259,9 @@ int FP_tree::FP_growth_first(FSout* fout) {
 		}
 /////////
 		printf("this is 1\n");
-		/*
+
 		pManager->cleanResult();
+		printf("this is 1.1\n");
 		for (sequence = upperbound - 1; sequence >= lowerbound; sequence--) {
 			//threads
 			//printf("this is 1_11\n");
@@ -2269,10 +2270,8 @@ int FP_tree::FP_growth_first(FSout* fout) {
 		}
 
 		pManager->isAllCompleted();
-		printf("this is 1.1\n");
-		*/
 
-
+/*
 #pragma omp parallel for schedule(dynamic,1)
 		for (sequence = upperbound - 1; sequence >= lowerbound; sequence--) {
 			int current, new_item_no, listlen;
@@ -2363,7 +2362,7 @@ int FP_tree::FP_growth_first(FSout* fout) {
 				local_list->top = listlen - 1;
 			}
 			release_node_array_after_mining(sequence, thread, workingthread);
-		}
+		}*/
 	}
 	wtime(&tend);
 	//	 printf("the major FP_growth cost %f vs %f seconds\n", tend - tstart, temp_time - tstart);
