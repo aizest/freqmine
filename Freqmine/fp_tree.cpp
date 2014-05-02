@@ -1792,22 +1792,25 @@ void FP_tree::scan2_DB(int workingthread) {
 	}
 	int totalnodes = cal_level_25(0);
 
+	/*
 	#pragma omp parallel for
 	for (j = 0; j < workingthread; j ++) {
 	 int local_rightsib_backpatch_count = rightsib_backpatch_count[j][0];
 	 Fnode ***local_rightsib_backpatch_stack = rightsib_backpatch_stack[j];
 	 for (int i = 0; i < local_rightsib_backpatch_count; i ++)
 	 *local_rightsib_backpatch_stack[i] = NULL;
-	 }
-	/*
+	 }*/
+
 	pManager->cleanResult();
+	printf("this is 7.1\n");
 	for (j = 0; j < workingthread; j ++) {
 		//threads
 		int* temj =new int(j);	//will this be released before being used??????????
 		ThreadJob* tj = new ThreadJob((void*)(temj), NULL, fp_scan2_db_func2);//should we release them
 		pManager->pushJob(tj);
 	}
-	pManager->isAllCompleted();*/
+	pManager->isAllCompleted();
+
 	wtime(&tend);
 	//	printf("Creating the first tree from source file cost %f seconds\n", tend - tstart);
 	//       printf("we have %d nodes in the initial FP tree\n", totalnodes);
