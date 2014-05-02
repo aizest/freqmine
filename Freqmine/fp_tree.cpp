@@ -1159,6 +1159,8 @@ void* fp_scan1_DB(void* fdata)
 
 	free(fpscan1);
 
+	printf("this is scan1func1\n");
+
 	return NULL;
 }
 
