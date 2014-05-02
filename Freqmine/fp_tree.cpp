@@ -291,7 +291,7 @@ template<class T> void* ftrans_fp_tree2array(void* fdata)
 		}
 	}
 
-	free(trans_para);
+	//free(trans_para);
 
 	return NULL;
 }
@@ -772,7 +772,7 @@ void* db_tiling_func1(void* fdata)
 	currentnode->finalize();
 	thread_pos[thread] = currentpos;
 
-	free(tiling_f1para);
+	//free(tiling_f1para);
 
 	return NULL;
 }
@@ -810,7 +810,7 @@ void* db_tiling_func2(void* fdata)
 		current_mapfilenode = current_mapfilenode->next;
 	}
 
-	free(temInt);
+	//free(temInt);
 
 	return NULL;
 }
@@ -1157,7 +1157,7 @@ void* fp_scan1_DB(void* fdata)
 		bran[k][i] = 0;
 	}
 
-	free(fpscan1);
+	//free(fpscan1);
 
 	printf("this is scan1func1\n");
 
@@ -1622,7 +1622,7 @@ void* fp_scan2_db_func1(void* fdata)
 	rightsib_backpatch_count[thread][0] = local_rightsib_backpatch_count;
 	threadworkloadnum[thread] = localthreadworkloadnum;
 
-	free(scan2_func1_para);
+	//free(scan2_func1_para);
 
 	return NULL;
 }
@@ -1638,7 +1638,7 @@ void* fp_scan2_db_func2(void* fdata)
 	for (int i = 0; i < local_rightsib_backpatch_count; i ++)
 	*local_rightsib_backpatch_stack[i] = NULL;
 
-	free(temInt);
+	//free(temInt);
 
 	return NULL;
 }
@@ -2191,7 +2191,7 @@ void* fp_growth_first_func(void* fdata)
 	}
 	myfptree->release_node_array_after_mining(sequence, thread, myfptree->pManager->getSize());
 
-	free(growth_para);
+	//free(growth_para);
 
 	return NULL;
 }
