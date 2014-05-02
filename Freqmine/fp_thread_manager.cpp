@@ -31,7 +31,7 @@ void* ManageFunction(void* argv)
 		if(pManager->isTerminated() && pManager->isJobEmpty())
 			break;
 
-		printf("thread wakeup.\n");
+		//printf("thread wakeup.\n");
 
 		//Get a job from the job queue
 		pManager->lockMutex();
