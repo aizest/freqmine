@@ -2,7 +2,6 @@
 #ifndef FPTHREAD_H_
 #define FPTHREAD_H_
 
-#include <pthread.h>
 
 class FPThread {
 private:

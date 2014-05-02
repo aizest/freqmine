@@ -336,13 +336,13 @@ template<class T> void first_transform_FPTree_into_FPArray(FP_tree *fptree,
 
 	printf("this is 2\n");
 
+	fptree->pManager->cleanResult();
 	for (j = 0; j < workingthread; j++) {
 		//threads
 		ThreadJob* tj = new ThreadJob((void*)(new struct ftrans_fp_tree2array_para<T>(fptree, j, node_offset_array, content_offset_array, mark, ItemArray)), NULL, ftrans_fp_tree2array<T>);//should we release them
 		fptree->pManager->pushJob(tj);
-		fptree->pManager->setSemaphore();
 	}
-	fptree->pManager->joinAllThreads();
+
 	/*
 #pragma omp parallel for
 	for (j = 0; j < workingthread; j++) {
@@ -832,13 +832,13 @@ void FP_tree::database_tiling(int workingthread) {
 
 	printf("this is 3\n");
 
+	pManager->cleanResult();
 	for (i = 0; i < mapfile->tablesize; i++) {
 		//threads
 		ThreadJob* tj = new ThreadJob((void*)(new _db_tiling_func1_para(i, thread_pos, local_num_hot_item, local_itemno)), NULL, db_tiling_func1);//should we release them
-				pManager->pushJob(tj);
-				pManager->setSemaphore();
+		pManager->pushJob(tj);
 	}
-	pManager->joinAllThreads();
+	pManager->isAllCompleted();
 
 	/*
 #pragma omp parallel for schedule(dynamic,1)
@@ -1030,14 +1030,14 @@ void FP_tree::database_tiling(int workingthread) {
 
 	printf("this is 4\n");
 
+	pManager->cleanResult();
 	for (i = 0; i < workingthread; i++) {
 		//threads
 		int* temi = new int(i);	//will this be released before being used??????????
 		ThreadJob* tj = new ThreadJob((void*)(temi), NULL, db_tiling_func2);//should we release them
 		pManager->pushJob(tj);
-		pManager->setSemaphore();
 	}
-	pManager->getSize();
+	pManager->isAllCompleted();
 
 /*
 #pragma omp parallel for
@@ -1158,8 +1158,6 @@ void* fp_scan1_DB(void* fdata)
 	}
 
 	//free(fpscan1);
-
-	printf("this is scan1func1\n");
 
 	return NULL;
 }
@@ -1296,14 +1294,14 @@ void FP_tree::scan1_DB(Data* fdat) {
 
 	printf("this is 5\n");
 
+	pManager->cleanResult();
 	for(int k = 0; k < WORKING_PTHREADS; k++) {
 		//add jobs to thread pool
 		//fp_scan1_DB_para fp_para1(this, num_hot_node);
 		ThreadJob* tj = new ThreadJob((void*)(new fp_scan1_DB_para(this, num_hot_node, k)), NULL, fp_scan1_DB);//should we release them
 		pManager->pushJob(tj);
-		pManager->setSemaphore();
 	}
-	pManager->joinAllThreads();
+	pManager->isAllCompleted();
 
 /*
 #pragma omp parallel for
@@ -1652,13 +1650,13 @@ void FP_tree::scan2_DB(int workingthread) {
 
 	printf("this is 6\n");
 
+	pManager->cleanResult();
 	for (j = 0; j < mergedworknum; j++) {
 		//add jobs to job queue
 		ThreadJob* tj = new ThreadJob((void*)(new fp_scan2_db_fun1_para(this, j, local_hashtable)), NULL, fp_scan2_db_func1);//should we release them
 		pManager->pushJob(tj);
-		pManager->setSemaphore();
 	}
-	pManager->joinAllThreads();
+	pManager->isAllCompleted();
 /*
 #pragma omp parallel for schedule(dynamic,1)
 	for (j = 0; j < mergedworknum; j++) {
@@ -1805,14 +1803,14 @@ void FP_tree::scan2_DB(int workingthread) {
 	 for (int i = 0; i < local_rightsib_backpatch_count; i ++)
 	 *local_rightsib_backpatch_stack[i] = NULL;
 	 }*/
+	pManager->cleanResult();
 	for (j = 0; j < workingthread; j ++) {
 		//threads
 		int* temj =new int(j);	//will this be released before being used??????????
 		ThreadJob* tj = new ThreadJob((void*)(temj), NULL, fp_scan2_db_func2);//should we release them
 		pManager->pushJob(tj);
-		pManager->setSemaphore();
 	}
-	pManager->joinAllThreads();
+	pManager->isAllCompleted();
 	wtime(&tend);
 	//	printf("Creating the first tree from source file cost %f seconds\n", tend - tstart);
 	//       printf("we have %d nodes in the initial FP tree\n", totalnodes);
@@ -2250,13 +2248,13 @@ int FP_tree::FP_growth_first(FSout* fout) {
 		}
 /////////
 		printf("this is 1\n");
+		pManager->cleanResult();
 		for (sequence = upperbound - 1; sequence >= lowerbound; sequence--) {
 			//threads
 			ThreadJob* tj = new ThreadJob((void*)(new fp_growth_first_func_para(this, fout, sequence, function_type)), NULL, fp_growth_first_func);//should we release them
 			pManager->pushJob(tj);
-			pManager->setSemaphore();
 		}
-		pManager->joinAllThreads();
+		pManager->isAllCompleted();
 
 /*
 #pragma omp parallel for schedule(dynamic,1)

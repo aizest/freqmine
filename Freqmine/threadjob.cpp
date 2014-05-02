@@ -11,6 +11,7 @@ ThreadJob::ThreadJob(void* _fdata, void* _fresult, thread_func _func)
 	fdata = _fdata;
 	fresult = _fresult;
 	func = _func;
+	sem_TJ = NULL;
 }
 
 

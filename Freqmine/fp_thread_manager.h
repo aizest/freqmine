@@ -9,6 +9,7 @@
 
 #include <queue>
 #include <semaphore.h>
+#include <pthread.h>
 
 #include "fp_thread.h"
 #include "threadjob.h"
@@ -34,8 +35,10 @@ private:
 	bool threads_terminate;	//notify the termination of thread pools
 	int m_nthreads;	//number of threads in thread size
 
-	//queue<int> m_jobQueue; // job queue
-	queue<ThreadJob*> m_jobQueue;
+
+	queue<ThreadJob*> m_jobQueue; // job queue
+	queue<ThreadJob*> m_completeJobQueue;	//complete job queue, NOTE: it is user's duty to free() result* and data*
+	list<sem_t*> jobSem;
 	list<FPThread*> m_threadList; // thread list
 
 	//int (*m_threadFuction)(int); //pointer of job function
@@ -76,6 +79,13 @@ public:
 	int getSize();
 
 	bool incrementSize(int incNum);
+
+	void pushComJob(ThreadJob* comJob);
+
+	bool cleanResult();
+
+	bool isAllCompleted();
+
 };
 
 #endif

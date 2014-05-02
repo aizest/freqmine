@@ -8,12 +8,15 @@
 #ifndef THREADJOB_H_
 #define THREADJOB_H_
 
+#include <cstdlib>
+#include <semaphore.h>
 
 typedef void* (*thread_func)(void* fdata);	//define the function pointer type
 
 class ThreadJob {
 public:
 	thread_func func;	//function pointer
+	sem_t* sem_TJ;
 	void* fdata;
 	void* fresult;
 	//sem_t completed;	//info this job is completed

@@ -4,9 +4,12 @@
 typedef struct _mrgfuncPara{
 	void* tMrg;	//point to parent manager
 	int t_Id;	//assigned id to the thread
+	//FPThread* t_me;	//point of the thread
+
 	_mrgfuncPara(void* _tMrg, int _t_Id){
 		tMrg = _tMrg;
 		t_Id = _t_Id;
+		//t_me = NULL;
 	}
 }mrgfuncPara;
 
@@ -25,7 +28,7 @@ void* ManageFunction(void* argv)
 	{
 		//The thread is blocked until being waken up
 		pManager->waitSemaphore();
-		if(pManager->isTerminated())
+		if(pManager->isTerminated() && pManager->isJobEmpty())
 			break;
 
 		printf("thread wakeup.\n");
@@ -39,23 +42,25 @@ void* ManageFunction(void* argv)
 		}else
 		{
 			nJob = pManager->popJob();
+			pManager->pushComJob(nJob);
 		}
 		pManager->unlockMutex();
 
 
-		printf("call the job function.\n");
+		//printf("call the job function.\n");
 		//pManager->runJobFunction(nWork);
 		tPara->tData = nJob->fdata;
-		nJob->fresult = nJob->func((void*) tPara);
-		free(tPara->tData);	//is this safe????????????????????????????????
+		nJob->fresult = nJob->func((void*) tPara);	//run job
+		//free(tPara->tData);	//is this safe????????????????????????????????
+
 		tPara->tData = NULL;
-		//terminate if job queue is empty (so far)
-		if(pManager->isJobEmpty()){
-			pManager->setTerminate();
-		}
+		sem_post(nJob->sem_TJ);//set job complete flag
+
 	}
 
 	free(tPara);
+	fpara->tMrg = NULL;
+	free(fpara);
 
 	printf("thread terminate.\n");
 	return NULL;
@@ -129,9 +134,13 @@ FPThreadManager::FPThreadManager(int nMaxThreadCnt)
 
 FPThreadManager::~FPThreadManager()
 {
+	setTerminate();
+	joinAllThreads();
+
 	sem_destroy(&m_sem);
 	pthread_mutex_destroy(&m_mutex);
 	pthread_mutex_destroy(&t_mutex);
+
 }
 
 //check if thread pool is terminated
@@ -184,8 +193,7 @@ int FPThreadManager::setSemaphore()
 // Grab the lock
 int FPThreadManager::lockMutex()
 {
-	int n= pthread_mutex_lock(&m_mutex);
-	return n;
+	return pthread_mutex_lock(&m_mutex);
 }
 
 // Release the lock
@@ -209,7 +217,16 @@ int FPThreadManager::unlockTMutex()
 // Push job data into the queue
 void FPThreadManager::pushJob(ThreadJob* newJob)
 {
+	newJob->sem_TJ = new sem_t();
 	m_jobQueue.push(newJob);
+	jobSem.push_back(newJob->sem_TJ);
+	setSemaphore();
+}
+
+//push a job (from job queue) to complete job queue, a job is not completed until its sem_t being set
+void FPThreadManager::pushComJob(ThreadJob* comJob)
+{
+	m_completeJobQueue.push(comJob);
 }
 
 // check if the job queue is empty, return true if job queue is empty
@@ -245,3 +262,50 @@ bool FPThreadManager::incrementSize(int incNum)
 {
 	return true;
 }
+
+//check whether all jobs have been completed
+bool FPThreadManager::isAllCompleted()
+{
+	list<sem_t*>::iterator it;
+	for(it = jobSem.begin(); it != jobSem.end(); it++)
+	{
+		//sem_t* tt = *it;
+		sem_wait(*it);
+	}
+	return true;
+}
+
+//clean complete job queue (should I use lock?)
+//remember to clean results, every time before use/reuse thread pool
+bool FPThreadManager::cleanResult()
+{
+	if(!isJobEmpty())
+	{
+		return false;
+	}
+
+	ThreadJob* nJob;
+	while(!m_completeJobQueue.empty())
+	{
+		nJob = m_completeJobQueue.front();
+		m_completeJobQueue.pop();
+		nJob->fdata = NULL;
+		nJob->fresult = NULL;
+		nJob->sem_TJ = NULL;
+		free(nJob);
+		nJob = NULL;
+	}
+
+	sem_t* nSem;
+	while(!jobSem.empty())
+	{
+		nSem = jobSem.front();
+		jobSem.pop_front();
+		free(nSem);
+		nSem = NULL;
+	}
+
+	return true;
+}
+
+
