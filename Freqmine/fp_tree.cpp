@@ -1170,9 +1170,7 @@ void* fp_scan1_DB(void* fdata)
 void FP_tree::scan1_DB(Data* fdat) {
 	int i, j;
 	int *counts;
-	printf("scan1-0\n");
 	int thread = 0;//this should always be 0 //(unsigned long)pthread_self();//omp_get_thread_num();
-	printf("scan1-1: %d\n", thread);
 	mapfile = (MapFile*) database_buf->newbuf(1, sizeof(MapFile));
 	mapfile->first = NULL;
 
@@ -1299,7 +1297,7 @@ void FP_tree::scan1_DB(Data* fdat) {
 
 	printf("this is 5\n");
 
-	/*
+
 	pManager->cleanResult();
 	for(int k = 0; k < pManager->getSize(); k++) {
 		//add jobs to thread pool
@@ -1308,10 +1306,10 @@ void FP_tree::scan1_DB(Data* fdat) {
 		pManager->pushJob(tj);
 	}
 	pManager->isAllCompleted();
-	*/
+
 	printf("this is 5.1\n");
 
-
+/*
 #pragma omp parallel for
 	for (int k = 0; k < workingthread; k++) {
 		int i;
@@ -1377,7 +1375,7 @@ void FP_tree::scan1_DB(Data* fdat) {
 			ITlen[k][i] = 0;
 			bran[k][i] = 0;
 		}
-	}
+	}*/
 	mapfile->transform_list_table();
 	for (i = 0; i < hot_node_num; i++)
 		ntypeidarray[i] = i;
