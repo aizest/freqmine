@@ -45,7 +45,7 @@
 #include "pthread_constants.h"
 #include "fp_tree.h"
 
-/*
+
 #ifdef _OPENMP
 #include <omp.h>
 #else
@@ -56,7 +56,7 @@ static int omp_get_thread_num() {
 	return 0;
 }
 #endif //_OPENMP
-*/
+
 
 #define fast_rightsib_table_size 16
 int ***currentnodeiter;
@@ -336,14 +336,15 @@ template<class T> void first_transform_FPTree_into_FPArray(FP_tree *fptree,
 
 	printf("this is 2\n");
 
+	/*
 	fptree->pManager->cleanResult();
 	for (j = 0; j < workingthread; j++) {
 		//threads
 		ThreadJob* tj = new ThreadJob((void*)(new struct ftrans_fp_tree2array_para<T>(fptree, j, node_offset_array, content_offset_array, mark, ItemArray)), NULL, ftrans_fp_tree2array<T>);//should we release them
 		fptree->pManager->pushJob(tj);
-	}
+	}*/
 
-	/*
+
 #pragma omp parallel for
 	for (j = 0; j < workingthread; j++) {
 		//printf("\n\nParallel threads #: %d\n\n",omp_get_num_threads());
@@ -420,7 +421,7 @@ template<class T> void first_transform_FPTree_into_FPArray(FP_tree *fptree,
 				kept_itemiter++;
 			}
 		}
-	}*/
+	}
 	fptree->ItemArray = (int *) ItemArray;
 }
 
@@ -832,6 +833,7 @@ void FP_tree::database_tiling(int workingthread) {
 
 	printf("this is 3\n");
 
+	/*
 	pManager->cleanResult();
 	for (i = 0; i < mapfile->tablesize; i++) {
 		//threads
@@ -839,8 +841,9 @@ void FP_tree::database_tiling(int workingthread) {
 		pManager->pushJob(tj);
 	}
 	pManager->isAllCompleted();
+	*/
 
-	/*
+
 #pragma omp parallel for schedule(dynamic,1)
 	for (i = 0; i < mapfile->tablesize; i++) {
 		//printf("\n\nParallel threads #: %d\n\n",omp_get_num_threads());
@@ -936,7 +939,7 @@ void FP_tree::database_tiling(int workingthread) {
 		newnode->top = currentpos;
 		currentnode->finalize();
 		thread_pos[thread] = currentpos;
-	}*/
+	}
 
 	for (i = 0; i < workingthread; i++) {
 		thread_pos[i] = 0;
@@ -1030,6 +1033,7 @@ void FP_tree::database_tiling(int workingthread) {
 
 	printf("this is 4\n");
 
+	/*
 	pManager->cleanResult();
 	for (i = 0; i < workingthread; i++) {
 		//threads
@@ -1037,9 +1041,9 @@ void FP_tree::database_tiling(int workingthread) {
 		ThreadJob* tj = new ThreadJob((void*)(temi), NULL, db_tiling_func2);//should we release them
 		pManager->pushJob(tj);
 	}
-	pManager->isAllCompleted();
+	pManager->isAllCompleted();*/
 
-/*
+
 #pragma omp parallel for
 	for (i = 0; i < workingthread; i++) {
 		MapFileNode *current_mapfilenode;
@@ -1066,7 +1070,7 @@ void FP_tree::database_tiling(int workingthread) {
 			current_mapfilenode->finalize();
 			current_mapfilenode = current_mapfilenode->next;
 		}
-	}*/
+	}
 	delete[] tempntypeoffsetbase;
 	delete[] thread_pos;
 }
@@ -1295,17 +1299,19 @@ void FP_tree::scan1_DB(Data* fdat) {
 
 	printf("this is 5\n");
 
+	/*
 	pManager->cleanResult();
-	for(int k = 0; k < WORKING_PTHREADS; k++) {
+	for(int k = 0; k < pManager->getSize(); k++) {
 		//add jobs to thread pool
 		//fp_scan1_DB_para fp_para1(this, num_hot_node);
 		ThreadJob* tj = new ThreadJob((void*)(new fp_scan1_DB_para(this, num_hot_node, k)), NULL, fp_scan1_DB);//should we release them
 		pManager->pushJob(tj);
 	}
 	pManager->isAllCompleted();
+	*/
 	printf("this is 5.1\n");
 
-/*
+
 #pragma omp parallel for
 	for (int k = 0; k < workingthread; k++) {
 		int i;
@@ -1371,7 +1377,7 @@ void FP_tree::scan1_DB(Data* fdat) {
 			ITlen[k][i] = 0;
 			bran[k][i] = 0;
 		}
-	}*/
+	}
 	mapfile->transform_list_table();
 	for (i = 0; i < hot_node_num; i++)
 		ntypeidarray[i] = i;
@@ -1652,14 +1658,15 @@ void FP_tree::scan2_DB(int workingthread) {
 
 	printf("this is 6\n");
 
+	/*
 	pManager->cleanResult();
 	for (j = 0; j < mergedworknum; j++) {
 		//add jobs to job queue
 		ThreadJob* tj = new ThreadJob((void*)(new fp_scan2_db_fun1_para(this, j, local_hashtable)), NULL, fp_scan2_db_func1);//should we release them
 		pManager->pushJob(tj);
 	}
-	pManager->isAllCompleted();
-/*
+	pManager->isAllCompleted();*/
+
 #pragma omp parallel for schedule(dynamic,1)
 	for (j = 0; j < mergedworknum; j++) {
 		int thread = omp_get_thread_num();
@@ -1771,7 +1778,7 @@ void FP_tree::scan2_DB(int workingthread) {
 		}
 		rightsib_backpatch_count[thread][0] = local_rightsib_backpatch_count;
 		threadworkloadnum[thread] = localthreadworkloadnum;
-	}*/
+	}
 	delete database_buf;
 
 	printf("this is 7\n");
@@ -1783,28 +1790,14 @@ void FP_tree::scan2_DB(int workingthread) {
 	}
 	int totalnodes = cal_level_25(0);
 
-//	#pragma omp parallel for
-	//TODO
-//	FPThreadManager* pManager = new FPThreadManager(scan2_DB_parallel_2,
-//			workingthread);
-	/*
-	printf("workingthread: %d\n", workingthread);
-	pManager->setFunction(scan2_DB_parallel_1_wrapper);
-	pManager->setFPTree(this);
-	pManager->setParameter(NULL);
-	for (j = 0; j < workingthread; j++) {
-		pManager->pushJob(j);
-		pManager->setSemaphore();
-	}
-	pManager->joinAllThreads();*/
-//	pManager->~FPThreadManager();
-
-	/*for (j = 0; j < workingthread; j ++) {
+	#pragma omp parallel for
+	for (j = 0; j < workingthread; j ++) {
 	 int local_rightsib_backpatch_count = rightsib_backpatch_count[j][0];
 	 Fnode ***local_rightsib_backpatch_stack = rightsib_backpatch_stack[j];
 	 for (int i = 0; i < local_rightsib_backpatch_count; i ++)
 	 *local_rightsib_backpatch_stack[i] = NULL;
-	 }*/
+	 }
+	/*
 	pManager->cleanResult();
 	for (j = 0; j < workingthread; j ++) {
 		//threads
@@ -1812,7 +1805,7 @@ void FP_tree::scan2_DB(int workingthread) {
 		ThreadJob* tj = new ThreadJob((void*)(temj), NULL, fp_scan2_db_func2);//should we release them
 		pManager->pushJob(tj);
 	}
-	pManager->isAllCompleted();
+	pManager->isAllCompleted();*/
 	wtime(&tend);
 	//	printf("Creating the first tree from source file cost %f seconds\n", tend - tstart);
 	//       printf("we have %d nodes in the initial FP tree\n", totalnodes);
@@ -2022,14 +2015,15 @@ void FP_tree::release_node_array_after_mining(int sequence, int thread,
 	{
 		//Lock needed!
 		//abc;
+		/*
 		lockMutex();
 		if (current < released_pos) {
 			released_pos = current;
 			fp_node_sub_buf->freebuf(MR_nodes[current], MC_nodes[current],
 					MB_nodes[current]);
 		}
-		unlockmutex();
-		/*
+		unlockmutex();*/
+
 #pragma omp critical
 		{
 			if (current < released_pos) {
@@ -2037,7 +2031,7 @@ void FP_tree::release_node_array_after_mining(int sequence, int thread,
 				fp_node_sub_buf->freebuf(MR_nodes[current], MC_nodes[current],
 						MB_nodes[current]);
 			}
-		}*/
+		}
 	}
 
 }
@@ -2055,14 +2049,15 @@ void FP_tree::release_node_array_before_mining(int sequence, int thread,
 	{
 		//Lock needed!
 		//abc;
+		/*
 		lockMutex();
 		if (current < released_pos) {
 			released_pos = current;
 			fp_node_sub_buf->freebuf(MR_nodes[current], MC_nodes[current],
 					MB_nodes[current]);
 		}
-		unlockmutex();
-	/*
+		unlockmutex();*/
+
 #pragma omp critical
 		{
 			if (current < released_pos) {
@@ -2070,7 +2065,7 @@ void FP_tree::release_node_array_before_mining(int sequence, int thread,
 				fp_node_sub_buf->freebuf(MR_nodes[current], MC_nodes[current],
 						MB_nodes[current]);
 			}
-		}*/
+		}
 	}
 
 }
@@ -2258,6 +2253,7 @@ int FP_tree::FP_growth_first(FSout* fout) {
 		}
 /////////
 		printf("this is 1\n");
+		/*
 		pManager->cleanResult();
 		for (sequence = upperbound - 1; sequence >= lowerbound; sequence--) {
 			//threads
@@ -2265,10 +2261,12 @@ int FP_tree::FP_growth_first(FSout* fout) {
 			ThreadJob* tj = new ThreadJob((void*)(new fp_growth_first_func_para(this, fout, sequence, function_type)), NULL, fp_growth_first_func);//should we release them
 			pManager->pushJob(tj);
 		}
-		printf("this is 1.1\n");
-		pManager->isAllCompleted();
 
-/*
+		pManager->isAllCompleted();
+		printf("this is 1.1\n");
+		*/
+
+
 #pragma omp parallel for schedule(dynamic,1)
 		for (sequence = upperbound - 1; sequence >= lowerbound; sequence--) {
 			int current, new_item_no, listlen;
@@ -2359,7 +2357,7 @@ int FP_tree::FP_growth_first(FSout* fout) {
 				local_list->top = listlen - 1;
 			}
 			release_node_array_after_mining(sequence, thread, workingthread);
-		}*/
+		}
 	}
 	wtime(&tend);
 	//	 printf("the major FP_growth cost %f vs %f seconds\n", tend - tstart, temp_time - tstart);
