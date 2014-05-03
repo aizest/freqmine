@@ -138,6 +138,7 @@ int main(int argc, char **argv)
 
 	//Create an instance of the Thread Pool
 	pthreadManager = new FPThreadManager(workingthread);
+	printf("num of threads: %d\n", pthreadManager->getSize());
 
 	wtime(&tstart);
 
