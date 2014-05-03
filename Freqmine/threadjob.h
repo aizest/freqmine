@@ -17,6 +17,8 @@ class ThreadJob {
 public:
 	thread_func func;	//function pointer
 	sem_t* sem_TJ;
+
+	//users need to free data and result, pool manager won't do this without knowledge of when it is safe to free
 	void* fdata;
 	void* fresult;
 
