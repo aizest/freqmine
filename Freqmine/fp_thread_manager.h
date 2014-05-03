@@ -17,8 +17,8 @@
 using namespace std;
 
 typedef struct _threadPara{
-	int tId;
-	void* tData;
+	int tId;	//assigned thread id, start from 0 ~ ...
+	void* tData;	//pointer to data package
 	_threadPara(int _tId, void* _tData){
 		tId = _tId;
 		tData = _tData;
@@ -41,14 +41,9 @@ private:
 	list<sem_t*> jobSem;
 	list<FPThread*> m_threadList; // thread list
 
-	//int (*m_threadFuction)(int); //pointer of job function
-
-
 public:
 	FPThreadManager(int nMaxThreadCnt);
 	virtual ~FPThreadManager();
-
-	//static void* ManageFunction(void* argv);
 
 	int joinAllThreads();
 
@@ -73,8 +68,6 @@ public:
 	void pushJob(ThreadJob* newJob);
 
 	ThreadJob* popJob();
-
-	//int runJobFunction(int nWork);
 
 	int getSize();
 

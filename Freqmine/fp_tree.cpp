@@ -41,21 +41,8 @@
 #include "buffer.h"
 #include "common.h"
 #include "wtime.h"
-//#include "fp_thread_manager.h"
 #include "pthread_constants.h"
 #include "fp_tree.h"
-
-
-#ifdef _OPENMP
-#include <omp.h>
-#else
-static int omp_get_max_threads() {
-	return 1;
-}
-static int omp_get_thread_num() {
-	return 0;
-}
-#endif //_OPENMP
 
 
 #define fast_rightsib_table_size 16
@@ -184,7 +171,6 @@ template<class T> void transform_FPTree_into_FPArray(FP_tree *fptree,
 	fptree->ItemArray = (int *) ItemArray;
 }
 
-//how is template work here!!!!!!!!!!
 //*******************************************
 //ftrans_fp_tree2array_para
 template<class T> struct ftrans_fp_tree2array_para{
@@ -202,7 +188,7 @@ template<class T> struct ftrans_fp_tree2array_para{
 		Tmark = _Tmark;
 		TItemArray = _TItemArray;
 	}
-};//ftrans_fp_tree2array_para;
+};
 
 //*******************************************
 //ftrans_fp_tree2array
@@ -216,7 +202,6 @@ template<class T> void* ftrans_fp_tree2array(void* fdata)
 	T mark = trans_para->Tmark;
 	T* ItemArray = trans_para->TItemArray;
 
-	//printf("\n\nParallel threads #: %d\n\n",omp_get_num_threads());
 	int kept_itemiter;
 	int itemiter = content_offset_array[j] - 1;
 	int stacktop;
@@ -291,7 +276,6 @@ template<class T> void* ftrans_fp_tree2array(void* fdata)
 		}
 	}
 
-	//free(trans_para);
 
 	return NULL;
 }
@@ -334,98 +318,18 @@ template<class T> void first_transform_FPTree_into_FPArray(FP_tree *fptree,
 	new_data_num[0][0] = sum_new_data_num;
 	T *ItemArray = (T *) local_buf->newbuf(1, new_data_num[0][0] * sizeof(T));
 
-	//printf("this is 2, no pthread\n");
-
-
+//*********************************************************
 	fptree->pManager->cleanResult();
-	printf("this is 2.1\n");
 	for (j = 0; j < workingthread; j++) {
 		//threads
 		ThreadJob* tj = new ThreadJob((void*)(
 				new struct ftrans_fp_tree2array_para<T>(fptree, j, node_offset_array, content_offset_array, mark, ItemArray)),
-				NULL, ftrans_fp_tree2array<T>);//should we release them
+				NULL, ftrans_fp_tree2array<T>);
 		fptree->pManager->pushJob(tj);
 	}
 	fptree->pManager->isAllCompleted();
 
-/*
-#pragma omp parallel for
-	for (j = 0; j < workingthread; j++) {
-		//printf("\n\nParallel threads #: %d\n\n",omp_get_num_threads());
-		int kept_itemiter;
-		int itemiter = content_offset_array[j] - 1;
-		int stacktop;
-		int shift_bit;
-		int i, k;
-		Fnode **local_nodestack = nodestack[j];
-		int *local_itemstack = itemstack[j];
-		int **local_currentnodeiter = currentnodeiter[j];
-		Fnode* temp;
-		for (i = 0; i < fptree->itemno; i++)
-			local_currentnodeiter[i] = fptree->NodeArrayList[i] + 2
-					* node_offset_array[j][i];
-		for (k = 0; k < threadworkloadnum[j]; k++) {
-			int ntype = threadworkload[j][k];
-			bool first = true;
-			stacktop = 0;
-			kept_itemiter = itemiter + 1;
-			if (hashtable[0][ntype] == fptree->Root)
-				local_nodestack[0] = fptree->Root->leftchild;
-			else {
-				for (i = 0, shift_bit = 1; i < hot_item_num; i++, shift_bit
-						<<= 1) {
-					if ((shift_bit & ntype) != 0) {
-						local_itemstack[stacktop] = i;
-						local_nodestack[stacktop] = NULL;
-						stacktop++;
-					}
-				}
-				stacktop--;
-				local_nodestack[stacktop] = hashtable[0][ntype];
-			}
-			while (stacktop != -1) {
-				temp = local_nodestack[stacktop];
-				stacktop--;
-				if (temp) {
-					if (temp->leftchild == NULL && !first) {
-						stacktop++;
-						local_nodestack[stacktop] = temp->rightsibling;
-						int itemname = temp->itemname;
-						int itemcount = temp->count;
-						int *nodeiter = local_currentnodeiter[itemname];
-						local_currentnodeiter[itemname] += 2;
-						nodeiter[0] = kept_itemiter;
-						nodeiter[1] = itemcount;
-						kept_itemiter--;
-					} else {
-						first = false;
-						ItemArray[itemiter] = mark;
-						itemiter--;
-						for (i = 0; i <= stacktop; i++) {
-							ItemArray[itemiter] = (T) local_itemstack[i];
-							itemiter--;
-						}
-						for (; temp != NULL; temp = temp->leftchild) {
-							stacktop++;
-							local_nodestack[stacktop] = temp->rightsibling;
-							int itemname = temp->itemname;
-							int itemcount = temp->count;
-							local_itemstack[stacktop] = itemname;
-							ItemArray[itemiter] = (T) itemname;
-							itemiter--;
-							int *nodeiter = local_currentnodeiter[itemname];
-							local_currentnodeiter[itemname] += 2;
-							nodeiter[0] = (itemiter + 2);
-							nodeiter[1] = itemcount;
-						}
-						kept_itemiter = itemiter + 1;
-						itemiter++;
-					}
-				}
-				kept_itemiter++;
-			}
-		}
-	}*/
+
 	fptree->ItemArray = (int *) ItemArray;
 }
 
@@ -683,7 +587,6 @@ void* db_tiling_func1(void* fdata)
 	int local_num_hot_item = tiling_f1para->db_func1_lmhi;
 	int local_itemno = tiling_f1para->db_func1_lino;
 
-	//printf("\n\nParallel threads #: %d\n\n",omp_get_num_threads());
 	int k, l;
 	int *content;
 	MapFileNode *currentnode;
@@ -777,8 +680,6 @@ void* db_tiling_func1(void* fdata)
 	currentnode->finalize();
 	thread_pos[thread] = currentpos;
 
-	//free(tiling_f1para);
-
 	return NULL;
 }
 
@@ -815,8 +716,6 @@ void* db_tiling_func2(void* fdata)
 		current_mapfilenode = current_mapfilenode->next;
 	}
 
-	//free(temInt);
-
 	return NULL;
 }
 
@@ -835,11 +734,9 @@ void FP_tree::database_tiling(int workingthread) {
 			origin[i][j] = 1;
 	}
 
-	printf("this is 3\n");
 
-
+//*********************************************************
 	pManager->cleanResult();
-	printf("this is 3.1\n");
 	for (i = 0; i < mapfile->tablesize; i++) {
 		//threads
 		ThreadJob* tj = new ThreadJob((void*)(new _db_tiling_func1_para(i, thread_pos, local_num_hot_item, local_itemno)), NULL, db_tiling_func1);//should we release them
@@ -847,104 +744,6 @@ void FP_tree::database_tiling(int workingthread) {
 	}
 	pManager->isAllCompleted();
 
-
-/*
-#pragma omp parallel for schedule(dynamic,1)
-	for (i = 0; i < mapfile->tablesize; i++) {
-		//printf("\n\nParallel threads #: %d\n\n",omp_get_num_threads());
-		int k, l;
-		int *content;
-		MapFileNode *currentnode;
-		MapFileNode *newnode;
-		int size;
-		unsigned short *newcontent;
-		int currentpos;
-		int thread = omp_get_thread_num();
-		int *local_origin = origin[thread];
-		int *local_ntype = ntypearray[thread];
-		int ntype;
-		int item;
-		int has;
-		int *local_hot_node_count = hot_node_count[thread];
-		newnode = thread_mapfile[thread]->first;
-		size = newnode->size;
-		newcontent = (unsigned short *) newnode->TransactionContent;
-		currentpos = thread_pos[thread];
-		int max_item = 0;
-		int min_item = local_itemno;
-		currentnode = mapfile->table[i];
-		ntype = 0;
-		content = currentnode->TransactionContent;
-		has = 0;
-		for (k = currentnode->top - 1; k >= 0; k--) {
-			if (content[k] == -1) {
-				ntype &= 0xffff;
-				if (has > 0) {
-					if (size - currentpos < has + 1) {
-						newnode->top = currentpos;
-						newnode = (MapFileNode *) fp_tree_buf[thread]->newbuf(
-								1, sizeof(MapFileNode));
-						newnode->init(5000000, 2);
-						newnode->next = thread_mapfile[thread]->first;
-						thread_mapfile[thread]->first = newnode;
-						newcontent
-								= (unsigned short *) (newnode->TransactionContent);
-						currentpos = 0;
-					}
-					newcontent[currentpos++] = ntype;
-					newcontent[currentpos++] = has;
-					local_ntype[ntype] += has + 1;
-					for (l = min_item; l <= max_item; l++)
-						if (local_origin[l] != 1) {
-							newcontent[currentpos++] = l;
-							local_origin[l] = 1;
-						}
-					has = 0;
-					max_item = 0;
-					min_item = local_itemno;
-				}
-				local_hot_node_count[ntype]++;
-				ntype = 0;
-			} else {
-				item = item_order[content[k]];
-				if (item < local_num_hot_item) {
-					ntype |= (1 << item);
-				} else {
-					has += local_origin[item];
-					local_origin[item] = 0;
-					if (item > max_item)
-						max_item = item;
-					if (item < min_item)
-						min_item = item;
-				}
-			}
-		}
-		ntype &= 0xffff;
-		if (has > 0) {
-			if (size - currentpos < has + 1) {
-				newnode->top = currentpos;
-				newnode = (MapFileNode *) fp_tree_buf[i]->newbuf(1,
-						sizeof(MapFileNode));
-				newnode->init(5000000, 2);
-				newnode->next = thread_mapfile[i]->first;
-				thread_mapfile[i]->first = newnode;
-				newcontent = (unsigned short *) (newnode->TransactionContent);
-				currentpos = 0;
-			}
-			newcontent[currentpos++] = ntype;
-			newcontent[currentpos++] = has;
-			local_ntype[ntype] += has + 1;
-			for (l = min_item; l <= max_item; l++)
-				if (local_origin[l] != 1) {
-					newcontent[currentpos++] = l;
-					local_origin[l] = 1;
-				}
-		}
-		local_hot_node_count[ntype]++;
-		newnode->top = currentpos;
-		currentnode->finalize();
-		thread_pos[thread] = currentpos;
-	}*/
 
 	for (i = 0; i < workingthread; i++) {
 		thread_pos[i] = 0;
@@ -1036,47 +835,16 @@ void FP_tree::database_tiling(int workingthread) {
 			}
 		}
 
-	printf("this is 4\n");
-
-
+//*********************************************************
 	pManager->cleanResult();
-	printf("this is 4.1\n");
 	for (i = 0; i < workingthread; i++) {
 		//threads
-		int* temi = new int(i);	//will this be released before being used??????????
+		int* temi = new int(i);
 		ThreadJob* tj = new ThreadJob((void*)(temi), NULL, db_tiling_func2);//should we release them
 		pManager->pushJob(tj);
 	}
 	pManager->isAllCompleted();
 
-/*
-#pragma omp parallel for
-	for (i = 0; i < workingthread; i++) {
-		MapFileNode *current_mapfilenode;
-		unsigned short * content;
-		int k, size, current_pos, ntype, has;
-		unsigned short *new_content;
-		int *local_threadntypeoffsetiter = threadntypeoffsetiter[i];
-		current_mapfilenode = thread_mapfile[i]->first;
-		while (current_mapfilenode) {
-			size = current_mapfilenode->top;
-			current_pos = 0;
-			content
-					= (unsigned short *) current_mapfilenode->TransactionContent;
-			while (current_pos < size) {
-				ntype = content[current_pos];
-				current_pos++;
-				has = content[current_pos];
-				new_content = threadtranscontent
-						+ local_threadntypeoffsetiter[ntype];
-				local_threadntypeoffsetiter[ntype] += has + 1;
-				for (k = 0; k < has + 1; k++)
-					new_content[k] = content[current_pos++];
-			}
-			current_mapfilenode->finalize();
-			current_mapfilenode = current_mapfilenode->next;
-		}
-	}*/
 	delete[] tempntypeoffsetbase;
 	delete[] thread_pos;
 }
@@ -1167,15 +935,13 @@ void* fp_scan1_DB(void* fdata)
 		bran[k][i] = 0;
 	}
 
-	//free(fpscan1);
-
 	return NULL;
 }
 
 void FP_tree::scan1_DB(Data* fdat) {
 	int i, j;
 	int *counts;
-	int thread = 0;//this should always be 0 //(unsigned long)pthread_self();//omp_get_thread_num();
+	int thread = 0;//this should always be 0 //omp_get_thread_num();
 	mapfile = (MapFile*) database_buf->newbuf(1, sizeof(MapFile));
 	mapfile->first = NULL;
 
@@ -1224,7 +990,7 @@ void FP_tree::scan1_DB(Data* fdat) {
 	if (num_hot_item > itemno)
 		num_hot_item = itemno;
 	int num_hot_node = 1 << hot_item_num;
-	int workingthread = pManager->getSize();//omp_get_max_threads();
+	int workingthread = pManager->getSize();
 
 	thread_mapfile = (MapFile **) database_buf->newbuf(1,
 			workingthread * 3 * sizeof(int*));
@@ -1300,88 +1066,16 @@ void FP_tree::scan1_DB(Data* fdat) {
 	}
 	hot_node_depth[0] = 0;
 
-	printf("this is 5\n");
 
-
+//*********************************************************
 	pManager->cleanResult();
-	printf("this is 5.1\n");
 	for(int k = 0; k < pManager->getSize(); k++) {
-		//add jobs to thread pool
-		//fp_scan1_DB_para fp_para1(this, num_hot_node);
 		ThreadJob* tj = new ThreadJob((void*)(new fp_scan1_DB_para(this, num_hot_node, k)), NULL, fp_scan1_DB);//should we release them
 		pManager->pushJob(tj);
 	}
 	pManager->isAllCompleted();
 
 
-
-/*
-#pragma omp parallel for
-	for (int k = 0; k < workingthread; k++) {
-		int i;
-#ifdef __linux__
-#ifdef CPU_SETSIZE
-		cpu_set_t cpu_mask;
-		CPU_ZERO(&cpu_mask);
-		CPU_SET(k,&cpu_mask);
-		sched_setaffinity(k, sizeof(cpu_set_t), &cpu_mask);
-#else
-		unsigned long cpu_mask = (unsigned long) 1 << MyRank;
-		printf("NOT CPU_SETSIZE cpu_mask:%d\n", cpu_mask);
-		sched_setaffinity(k, sizeof(unsigned long), &cpu_mask);
-#endif
-#endif
-		currentnodeiter[k] = (int**) fp_buf[k]->newbuf(
-				1,
-				itemno * (14 + fast_rightsib_table_size) * sizeof(int *)
-						+ num_hot_node * 2 * sizeof(int *)
-						+ (fast_rightsib_table_size * itemno) * sizeof(int *)
-						+ fast_rightsib_table_size + 3 * sizeof(int*));
-		nodestack[k] = (Fnode**) (currentnodeiter[k] + itemno);
-		itemstack[k] = (int*) (nodestack[k] + itemno);
-		global_count_array[k] = itemstack[k] + itemno;
-		global_table_array[k] = global_count_array[k] + itemno;
-		global_temp_order_array[k] = global_table_array[k] + itemno;
-		global_order_array[k] = global_temp_order_array[k] + itemno;
-		supp[k] = global_order_array[k] + itemno;
-		ITlen[k] = supp[k] + itemno;
-		bran[k] = ITlen[k] + itemno;
-		compact[k] = bran[k] + itemno;
-		prefix[k] = compact[k] + itemno;
-		hashtable[k] = (Fnode**) (prefix[k] + itemno);
-		origin[k] = (int *) (hashtable[k] + num_hot_node);
-		hot_node_count[k] = (int *) (origin[k] + itemno);
-		fast_rightsib_table[k] = (Fnode ***) (hot_node_count[k] + num_hot_node);
-		fast_rightsib_table[k][0] = (Fnode **) (fast_rightsib_table[k]
-				+ fast_rightsib_table_size);
-		for (i = 1; i < fast_rightsib_table_size; i++)
-			fast_rightsib_table[k][i] = fast_rightsib_table[k][i - 1] + itemno;
-		global_nodenum[k] = (int *) fp_tree_buf[k]->newbuf(1,
-				itemno * sizeof(int));
-		for (i = 0; i < itemno; i++)
-			global_nodenum[k][i] = 0;
-		new_data_num[k]
-				= (int *) (fast_rightsib_table[k][fast_rightsib_table_size - 1]
-						+ itemno);
-		new_data_num[k][0] = 0;
-		rightsib_backpatch_count[k] = new_data_num[k] + 1;
-		sum_item_num[k] = rightsib_backpatch_count[k] + 1;
-		rightsib_backpatch_stack[k] = (Fnode ***) (sum_item_num[k] + 1);
-		rightsib_backpatch_count[k][0] = 0;
-		for (i = 0; i < itemno * fast_rightsib_table_size; i++)
-			fast_rightsib_table[k][0][i] = NULL;
-		for (i = 1; i < num_hot_node; i++) {
-			hot_node_count[k][i] = 0;
-			hashtable[k][i] = NULL;
-		}
-		hashtable[k][0] = Root;
-		for (i = 0; i < itemno; i++) {
-			origin[k][i] = 0;
-			supp[k][i] = 0;
-			ITlen[k][i] = 0;
-			bran[k][i] = 0;
-		}
-	}*/
 	mapfile->transform_list_table();
 	for (i = 0; i < hot_node_num; i++)
 		ntypeidarray[i] = i;
@@ -1518,7 +1212,6 @@ typedef struct _fp_scan2_db_fun1_para{
 //fp_tree::scan_DB thread run function 1
 void* fp_scan2_db_func1(void* fdata)
 {
-	//replace the first omp block in scan2_db
 	fp_scan2_db_fun1_para* scan2_func1_para = (fp_scan2_db_fun1_para*) ((threadPara*) fdata)->tData;
 	int j = scan2_func1_para->iter;
 	Fnode **local_hashtable = scan2_func1_para->scan2_localhashtable1;
@@ -1632,8 +1325,6 @@ void* fp_scan2_db_func1(void* fdata)
 	rightsib_backpatch_count[thread][0] = local_rightsib_backpatch_count;
 	threadworkloadnum[thread] = localthreadworkloadnum;
 
-	//free(scan2_func1_para);
-
 	return NULL;
 }
 
@@ -1648,7 +1339,6 @@ void* fp_scan2_db_func2(void* fdata)
 	for (int i = 0; i < local_rightsib_backpatch_count; i ++)
 	*local_rightsib_backpatch_stack[i] = NULL;
 
-	//free(temInt);
 
 	return NULL;
 }
@@ -1660,11 +1350,9 @@ void FP_tree::scan2_DB(int workingthread) {
 	database_tiling(workingthread);
 	Fnode **local_hashtable = hashtable[0];
 
-	printf("this is 6\n");
 
-
+//*********************************************************
 	pManager->cleanResult();
-	printf("this is 6.1\n");
 	for (j = 0; j < mergedworknum; j++) {
 		//add jobs to job queue
 		ThreadJob* tj = new ThreadJob((void*)(new fp_scan2_db_fun1_para(this, j, local_hashtable)), NULL, fp_scan2_db_func1);//should we release them
@@ -1672,122 +1360,7 @@ void FP_tree::scan2_DB(int workingthread) {
 	}
 	pManager->isAllCompleted();
 
-	/*
-#pragma omp parallel for schedule(dynamic,1)
-	for (j = 0; j < mergedworknum; j++) {
-		int thread = omp_get_thread_num();
-		int localthreadworkloadnum = threadworkloadnum[thread];
-		int *localthreadworkload = threadworkload[thread];
-		int has, ntype;
-		unsigned short *content = threadtranscontent;
-		int *local_nodenum = global_nodenum[thread];
-		memory *local_fp_tree_buf = fp_tree_buf[thread];
-		int *local_bran = bran[thread];
-		unsigned short* compact;
-		Fnode ***local_rightsib_backpatch_stack =
-				rightsib_backpatch_stack[thread];
-		int local_rightsib_backpatch_count =
-				rightsib_backpatch_count[thread][0];
-		for (int t = mergedworkbase[j]; t < mergedworkend[j]; t++) {
-			ntype = ntypeidarray[t];
-			localthreadworkload[localthreadworkloadnum] = ntype;
-			localthreadworkloadnum++;
-			int size = ntypeoffsetend[ntype];
-			int current_pos = ntypeoffsetbase[ntype];
-			Fnode **local_fast_rightsib_table =
-					fast_rightsib_table[thread][ntype];
-			Fnode *current_root = local_hashtable[ntype];
-			int current_new_data_num = 0;
-			int current_hot_node_depth = hot_node_depth[ntype];
-			if (ntype != 0)
-				local_nodenum[hot_node_index[ntype]]++;
-			while (current_pos < size) {
-				has = content[current_pos];
-				current_pos += 1;
-				compact = content + current_pos;
-				{
-					Fnode* child;
-					Fnode* temp, *temp2;
-					Fnode** backpatch_node = NULL;
-					int i = 0, k;
-					child = current_root;
-					if (ntype < fast_rightsib_table_size) {
-						temp = local_fast_rightsib_table[compact[i]];
-						if (temp == NULL) {
-							backpatch_node
-									= &(local_fast_rightsib_table[compact[i]]);
-						} else {
-							temp->count += 1;
-							child = temp;
-							i++;
-						}
-					}
-					if (temp != NULL)
-						while (i < has) {
-							for (temp = child->leftchild; temp != NULL; temp
-									= temp->rightsibling) {
-								if (temp->itemname == table[compact[i]])
-									break;
-							}
-							if (!temp)
-								break;
-							temp->count += 1;
-							child = temp;
-							i++;
-						}
-					k = has - i;
-					if (k > 0) {
-						temp = (Fnode*) local_fp_tree_buf->newbuf(1,
-								sizeof(Fnode) * k);
-						if (backpatch_node) {
-							*backpatch_node = temp;
-							local_rightsib_backpatch_stack[local_rightsib_backpatch_count]
-									= backpatch_node;
-							local_rightsib_backpatch_count++;
-						}
-						local_nodenum[compact[i]]++;
-						local_bran[i]++;
-						temp->itemname = compact[i];
-						temp->count = 1;
-						if (child->leftchild == NULL) {
-							current_new_data_num += k;
-							temp->rightsibling = child->leftchild;
-							child->leftchild = temp;
-						} else {
-							temp->rightsibling = child->leftchild->rightsibling;
-							child->leftchild->rightsibling = temp;
-							current_new_data_num += has
-									+ current_hot_node_depth;
-						}
-						temp2 = temp;
-						temp++;
-						i++;
-						while (i < has) {
-							local_nodenum[compact[i]]++;
-							local_bran[i]++;
-							temp->itemname = compact[i];
-							temp->rightsibling = NULL;
-							temp->count = 1;
-							temp2->leftchild = temp;
-							temp2 = temp;
-							temp++;
-							i++;
-						}
-						temp--;
-						temp->leftchild = NULL;
-					}
-				}
-				current_pos += has;
-			}
-			new_data_num[thread][0] += current_new_data_num
-					+ current_hot_node_depth + 1;
-		}
-		rightsib_backpatch_count[thread][0] = local_rightsib_backpatch_count;
-		threadworkloadnum[thread] = localthreadworkloadnum;
-	}*/
 	delete database_buf;
-
-	printf("this is 7\n");
 
 	for (int i = 0; i < workingthread; i++) {
 		int temp = 0;
@@ -1796,153 +1369,18 @@ void FP_tree::scan2_DB(int workingthread) {
 	}
 	int totalnodes = cal_level_25(0);
 
-	/*
-	#pragma omp parallel for
-	for (j = 0; j < workingthread; j ++) {
-	 int local_rightsib_backpatch_count = rightsib_backpatch_count[j][0];
-	 Fnode ***local_rightsib_backpatch_stack = rightsib_backpatch_stack[j];
-	 for (int i = 0; i < local_rightsib_backpatch_count; i ++)
-	 *local_rightsib_backpatch_stack[i] = NULL;
-	 }*/
-
+//*********************************************************
 	pManager->cleanResult();
-	printf("this is 7.1\n");
 	for (j = 0; j < workingthread; j ++) {
 		//threads
-		int* temj =new int(j);	//will this be released before being used??????????
-		ThreadJob* tj = new ThreadJob((void*)(temj), NULL, fp_scan2_db_func2);//should we release them
+		int* temj =new int(j);
+		ThreadJob* tj = new ThreadJob((void*)(temj), NULL, fp_scan2_db_func2);
 		pManager->pushJob(tj);
 	}
 	pManager->isAllCompleted();
 
 	wtime(&tend);
-	//	printf("Creating the first tree from source file cost %f seconds\n", tend - tstart);
-	//       printf("we have %d nodes in the initial FP tree\n", totalnodes);
 }
-
-/*
-//may be removed
-int scan2_DB_parallel_1_wrapper(FP_tree * fp_tree, int j)
-{
-	return fp_tree->scan2_DB_parallel_2(j);
-}
-//may be removed
-int FP_tree::scan2_DB_parallel_1(int j, Fnode **local_hashtable) {
-	int thread = pthread_self();//omp_get_thread_num();
-	int localthreadworkloadnum = threadworkloadnum[thread];
-	int *localthreadworkload = threadworkload[thread];
-	int has, ntype;
-	unsigned short *content = threadtranscontent;
-	int *local_nodenum = global_nodenum[thread];
-	memory *local_fp_tree_buf = fp_tree_buf[thread];
-	int *local_bran = bran[thread];
-	unsigned short* compact;
-	Fnode ***local_rightsib_backpatch_stack = rightsib_backpatch_stack[thread];
-	int local_rightsib_backpatch_count = rightsib_backpatch_count[thread][0];
-	for (int t = mergedworkbase[j]; t < mergedworkend[j]; t++) {
-		ntype = ntypeidarray[t];
-		localthreadworkload[localthreadworkloadnum] = ntype;
-		localthreadworkloadnum++;
-		int size = ntypeoffsetend[ntype];
-		int current_pos = ntypeoffsetbase[ntype];
-		Fnode **local_fast_rightsib_table = fast_rightsib_table[thread][ntype];
-		Fnode *current_root = local_hashtable[ntype];
-		int current_new_data_num = 0;
-		int current_hot_node_depth = hot_node_depth[ntype];
-		if (ntype != 0)
-			local_nodenum[hot_node_index[ntype]]++;
-		while (current_pos < size) {
-			has = content[current_pos];
-			current_pos += 1;
-			compact = content + current_pos;
-			{
-				Fnode* child;
-				Fnode* temp, *temp2;
-				Fnode** backpatch_node = NULL;
-				int i = 0, k;
-				child = current_root;
-				if (ntype < fast_rightsib_table_size) {
-					temp = local_fast_rightsib_table[compact[i]];
-					if (temp == NULL) {
-						backpatch_node
-								= &(local_fast_rightsib_table[compact[i]]);
-					} else {
-						temp->count += 1;
-						child = temp;
-						i++;
-					}
-				}
-				if (temp != NULL)
-					while (i < has) {
-						for (temp = child->leftchild; temp != NULL; temp
-								= temp->rightsibling) {
-							if (temp->itemname == table[compact[i]])
-								break;
-						}
-						if (!temp)
-							break;
-						temp->count += 1;
-						child = temp;
-						i++;
-					}
-				k = has - i;
-				if (k > 0) {
-					temp = (Fnode*) local_fp_tree_buf->newbuf(1,
-							sizeof(Fnode) * k);
-					if (backpatch_node) {
-						*backpatch_node = temp;
-						local_rightsib_backpatch_stack[local_rightsib_backpatch_count]
-								= backpatch_node;
-						local_rightsib_backpatch_count++;
-					}
-					local_nodenum[compact[i]]++;
-					local_bran[i]++;
-					temp->itemname = compact[i];
-					temp->count = 1;
-					if (child->leftchild == NULL) {
-						current_new_data_num += k;
-						temp->rightsibling = child->leftchild;
-						child->leftchild = temp;
-					} else {
-						temp->rightsibling = child->leftchild->rightsibling;
-						child->leftchild->rightsibling = temp;
-						current_new_data_num += has + current_hot_node_depth;
-					}
-					temp2 = temp;
-					temp++;
-					i++;
-					while (i < has) {
-						local_nodenum[compact[i]]++;
-						local_bran[i]++;
-						temp->itemname = compact[i];
-						temp->rightsibling = NULL;
-						temp->count = 1;
-						temp2->leftchild = temp;
-						temp2 = temp;
-						temp++;
-						i++;
-					}
-					temp--;
-					temp->leftchild = NULL;
-				}
-			}
-			current_pos += has;
-		}
-		new_data_num[thread][0] += current_new_data_num
-				+ current_hot_node_depth + 1;
-	}
-	rightsib_backpatch_count[thread][0] = local_rightsib_backpatch_count;
-	threadworkloadnum[thread] = localthreadworkloadnum;
-	return 0;
-}
-//may be removed
-int FP_tree::scan2_DB_parallel_2(int j) {
-	int local_rightsib_backpatch_count = rightsib_backpatch_count[j][0];
-	Fnode ***local_rightsib_backpatch_stack = rightsib_backpatch_stack[j];
-	for (int i = 0; i < local_rightsib_backpatch_count; i++)
-		*local_rightsib_backpatch_stack[i] = NULL;
-	return 0;
-}*/
 
 void FP_tree::scan1_DB(int thread, FP_tree* old_tree, int item) {
 	int i;
@@ -2022,9 +1460,7 @@ void FP_tree::release_node_array_after_mining(int sequence, int thread,
 			current = thread_finish_status[i];
 	}
 	{
-		//Lock needed!
-		//abc;
-
+//*********************************************************
 		lockMutex();
 		if (current < released_pos) {
 			released_pos = current;
@@ -2032,15 +1468,6 @@ void FP_tree::release_node_array_after_mining(int sequence, int thread,
 					MB_nodes[current]);
 		}
 		unlockmutex();
-/*
-#pragma omp critical
-		{
-			if (current < released_pos) {
-				released_pos = current;
-				fp_node_sub_buf->freebuf(MR_nodes[current], MC_nodes[current],
-						MB_nodes[current]);
-			}
-		}*/
 	}
 
 }
@@ -2056,9 +1483,7 @@ void FP_tree::release_node_array_before_mining(int sequence, int thread,
 	}
 	current++;
 	{
-		//Lock needed!
-		//abc;
-
+//*********************************************************
 		lockMutex();
 		if (current < released_pos) {
 			released_pos = current;
@@ -2066,15 +1491,6 @@ void FP_tree::release_node_array_before_mining(int sequence, int thread,
 					MB_nodes[current]);
 		}
 		unlockmutex();
-/*
-#pragma omp critical
-		{
-			if (current < released_pos) {
-				released_pos = current;
-				fp_node_sub_buf->freebuf(MR_nodes[current], MC_nodes[current],
-						MB_nodes[current]);
-			}
-		}*/
 	}
 
 }
@@ -2111,9 +1527,6 @@ void* fp_growth_first_func(void* fdata)
 	char* MB2;
 	int thread = ((threadPara*) fdata)->tId;
 
-	//printf("thread#%d: 1\n", thread);
-
-	//release_node_array_before_mining(sequence, thread, workingthread); remove due to data race
 	memory *local_fp_tree_buf = fp_tree_buf[thread];
 	memory *local_fp_buf = fp_buf[thread];
 	stack *local_list = flist[thread];
@@ -2152,9 +1565,7 @@ void* fp_growth_first_func(void* fdata)
 		local_list->top = listlen - 1;
 		myfptree->release_node_array_after_mining(sequence, thread, myfptree->pManager->getSize());
 		return NULL;
-		//continue;
 	}
-	//printf("thread#%d: 2\n", thread);
 
 	FP_tree *fptree;
 	fptree = (FP_tree*) local_fp_buf->newbuf(1, sizeof(FP_tree));
@@ -2199,10 +1610,6 @@ void* fp_growth_first_func(void* fdata)
 		local_list->top = listlen - 1;
 	}
 	myfptree->release_node_array_after_mining(sequence, thread, myfptree->pManager->getSize());
-
-	//printf("thread#%d: 3\n", thread);
-
-	//free(growth_para);
 
 	return NULL;
 }
@@ -2260,115 +1667,19 @@ int FP_tree::FP_growth_first(FSout* fout) {
 				function_type = new_function_type;
 			}
 		}
-/////////
-		printf("this is 1\n");
 
+//*********************************************************
 		pManager->cleanResult();
-		printf("this is 1.1\n");
 		for (sequence = upperbound - 1; sequence >= lowerbound; sequence--) {
 			//threads
-			//printf("this is 1_11\n");
 			ThreadJob* tj = new ThreadJob((void*)(new fp_growth_first_func_para(this, fout, sequence, function_type)), NULL, fp_growth_first_func);//should we release them
 			pManager->pushJob(tj);
 		}
 
 		pManager->isAllCompleted();
 
-/*
-#pragma omp parallel for schedule(dynamic,1)
-		for (sequence = upperbound - 1; sequence >= lowerbound; sequence--) {
-			int current, new_item_no, listlen;
-			int MC2 = 0;
-			unsigned int MR2 = 0;
-			char* MB2;
-			int thread = omp_get_thread_num();
-			//release_node_array_before_mining(sequence, thread, workingthread); remove due to data race
-			memory *local_fp_tree_buf = fp_tree_buf[thread];
-			memory *local_fp_buf = fp_buf[thread];
-			stack *local_list = flist[thread];
-			int *local_ITlen = ITlen[thread];
-			int *local_global_table_array = global_table_array[thread];
-			int *local_global_count_array = global_count_array[thread];
-			current = table[sequence];
-			local_list->FS[local_list->top++] = current;
-			listlen = local_list->top;
-			local_ITlen[local_list->top - 1]++;
-			if (fout)
-				fout->printSet(local_list->top, local_list->FS, count[sequence]);
-			if (sequence != 0) {
-				if (function_type == 0)
-					new_item_no = FPArray_conditional_pattern_base(this,
-							sequence, thread, (unsigned char) 0xff);
-				else if (function_type == 1)
-					new_item_no = FPArray_conditional_pattern_base(this,
-							sequence, thread, (unsigned short) 0xffff);
-				else
-					new_item_no = FPArray_conditional_pattern_base(this,
-							sequence, thread, (unsigned int) 0xffffffff);
-			} else
-				new_item_no = 0;
-
-			if (new_item_no == 0 || new_item_no == 1) {
-				if (new_item_no == 1) {
-					local_list->FS[local_list->top++]
-							= local_global_table_array[0];
-					local_ITlen[local_list->top - 1]++;
-					if (fout)
-						fout->printSet(local_list->top, local_list->FS,
-								local_global_count_array[0]);
-				}
-				local_list->top = listlen - 1;
-				release_node_array_after_mining(sequence, thread, workingthread);
-				continue;
-			}
-
-			FP_tree *fptree;
-			fptree = (FP_tree*) local_fp_buf->newbuf(1, sizeof(FP_tree));
-			fptree->init(this->itemno, new_item_no, thread, pManager);
-
-			MB2 = local_fp_tree_buf->bufmark(&MR2, &MC2);
-			fptree->MB_tree = MB2;
-			fptree->MR_tree = MR2;
-			fptree->MC_tree = MC2;
-
-			fptree->scan1_DB(thread, this, sequence);
-			if (function_type == 0)
-				FPArray_scan2_DB(fptree, this, sequence, thread,
-						(unsigned char) 0xff);
-			else if (function_type == 1)
-				FPArray_scan2_DB(fptree, this, sequence, thread,
-						(unsigned short) 0xffff);
-			else
-				FPArray_scan2_DB(fptree, this, sequence, thread,
-						(unsigned int) 0xffffffff);
-			local_list->top = listlen;
-			if (fptree->Single_path(thread)) {
-				Fnode* node;
-				for (node = fptree->Root->leftchild; node != NULL; node
-						= node->leftchild)
-					local_list->FS[local_list->top++]
-							= fptree->table[node->itemname];
-				local_list->top = listlen;
-				int i1, i2;
-				int temp = 1;
-				for (i1 = 1, i2 = new_item_no; i1 <= new_item_no; i1++, i2--) {
-					temp = (temp * i2) / i1;
-					local_ITlen[local_list->top + i1 - 1] += temp;
-				}
-				if (fout)
-					fptree->generate_all(new_item_no, thread, fout);
-				local_list->top--;
-				local_fp_tree_buf->freebuf(fptree->MR_tree, fptree->MC_tree,
-						fptree->MB_tree);
-			} else {
-				fptree->FP_growth(thread, fout);
-				local_list->top = listlen - 1;
-			}
-			release_node_array_after_mining(sequence, thread, workingthread);
-		}*/
 	}
 	wtime(&tend);
-	//	 printf("the major FP_growth cost %f vs %f seconds\n", tend - tstart, temp_time - tstart);
 	return 0;
 }
 

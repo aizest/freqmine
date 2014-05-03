@@ -49,18 +49,11 @@ THE POSSIBILITY OF SUCH DAMAGE.
 #include <time.h>
 #include <sys/time.h>
 #include "common.h"
-#include "pthread_constants.h"
+//#include "pthread_constants.h"
 
 using namespace std;
 
 #include "buffer.h"
-
-
-#ifdef _OPENMP
-#include <omp.h>
-#else
-static int omp_get_max_threads() {return 1;}
-#endif //_OPENMP
 
 #ifdef ENABLE_PARSEC_HOOKS
 #include <hooks.h>
@@ -84,6 +77,7 @@ stack** flist;
 int TRANSACTION_NO=0;
 int ITEM_NO=100;
 int THRESHOLD;
+int workingthread=1;
 
 memory** fp_buf;
 memory* fp_node_sub_buf;
@@ -96,7 +90,7 @@ FPThreadManager* pthreadManager;
 void printLen()
 {
 	int i, j;
-	int workingthread=omp_get_max_threads();//WORKING_PTHREADS;//
+	//int workingthread=omp_get_max_threads();//WORKING_PTHREADS;//
 
 	for (j = 1; j < workingthread; j ++)
 		for (i = 0; i < ITEM_NO; i ++)
@@ -109,7 +103,6 @@ void printLen()
 int main(int argc, char **argv)
 {
 	double tstart, tdatap, tend;
-	int workingthread=omp_get_max_threads();//WORKING_PTHREADS;//
 	int i;
 	FP_tree* fptree;
 
@@ -128,12 +121,13 @@ int main(int argc, char **argv)
 	__parsec_bench_begin(__parsec_freqmine);
 #endif
 	
-	if (argc < 3)
+	if (argc < 4)
 	{
-	  cout << "usage: " << argv[0] << " <infile> <MINSUP> [<outfile>]\n";
+	  cout << "usage: " << argv[0] << " <infile> <MINSUP> <num_threads> [<outfile>]\n";
 	  exit(1);
 	}
 	THRESHOLD = atoi(argv[2]);
+	workingthread= atoi(argv[3]);
 
 	Data* fdat=new Data(argv[1]);
 
@@ -143,9 +137,7 @@ int main(int argc, char **argv)
 	}
 
 	//Create an instance of the Thread Pool
-	printf("a\n");
 	pthreadManager = new FPThreadManager(workingthread);
-	printf("a0\n");
 
 	wtime(&tstart);
 
@@ -161,17 +153,16 @@ int main(int argc, char **argv)
 #ifdef ENABLE_PARSEC_HOOKS
 	__parsec_roi_begin();
 #endif
-	printf("a1\n");
 	fptree -> scan1_DB(fdat);
 	wtime(&tdatap);
-	printf("a2\n");
 	fptree->scan2_DB(workingthread);
 	fdat->close();
 	if(fptree->itemno==0)return 0;
 	FSout* fout;
-	if(argc==4)
+
+	if(argc==5)
 	{
-		fout = new FSout(argv[3]);
+		fout = new FSout(argv[4]);
 		//print the count of emptyset
 		fout->printSet(0, NULL, TRANSACTION_NO);
 	}else
@@ -193,7 +184,6 @@ int main(int argc, char **argv)
 		printLen();
 		return 0;
 	}
-	printf("a3\n");
 	fptree->FP_growth_first(fout);
 #ifdef ENABLE_PARSEC_HOOKS
 	__parsec_roi_end();

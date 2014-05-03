@@ -19,10 +19,8 @@ public:
 	sem_t* sem_TJ;
 	void* fdata;
 	void* fresult;
-	//sem_t completed;	//info this job is completed
 
 	ThreadJob(void* _fdata, void* _fresult, thread_func _func);
-	//a deconstruction function may be needed, with free()
 
 };
 

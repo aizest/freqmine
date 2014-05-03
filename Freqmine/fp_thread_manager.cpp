@@ -4,12 +4,10 @@
 typedef struct _mrgfuncPara{
 	void* tMrg;	//point to parent manager
 	int t_Id;	//assigned id to the thread
-	//FPThread* t_me;	//point of the thread
 
 	_mrgfuncPara(void* _tMrg, int _t_Id){
 		tMrg = _tMrg;
 		t_Id = _t_Id;
-		//t_me = NULL;
 	}
 }mrgfuncPara;
 
@@ -19,7 +17,6 @@ void* ManageFunction(void* argv)
 {
 	mrgfuncPara* fpara = (mrgfuncPara*) argv;
 	FPThreadManager* pManager = (FPThreadManager*)fpara->tMrg;
-	//int threadId = *((int*) argv);
 	threadPara* tPara = new threadPara(fpara->t_Id, NULL);
 	ThreadJob* nJob;
 
@@ -30,8 +27,6 @@ void* ManageFunction(void* argv)
 		pManager->waitSemaphore();
 		if(pManager->isTerminated() && pManager->isJobEmpty())
 			break;
-
-		//printf("thread wakeup.\n");
 
 		//Get a job from the job queue
 		pManager->lockMutex();
@@ -46,12 +41,8 @@ void* ManageFunction(void* argv)
 		}
 		pManager->unlockMutex();
 
-
-		//printf("call the job function.\n");
-		//pManager->runJobFunction(nWork);
 		tPara->tData = nJob->fdata;
 		nJob->fresult = nJob->func((void*) tPara);	//run job
-		//free(tPara->tData);	//is this safe????????????????????????????????
 
 		tPara->tData = NULL;
 		sem_post(nJob->sem_TJ);//set job complete flag
@@ -65,52 +56,6 @@ void* ManageFunction(void* argv)
 	printf("thread terminate.\n");
 	return NULL;
 }
-
-//A wrapper function, which will run the business job function.
-//A pthread will be created for this function
-/*
-void* ManageFunction(void* argv)
-{
-	FPThreadManager* pManager = (FPThreadManager*)argv;
-	ThreadJob* nJob;
-
-	//the thread will be re-used until all the jobs are done
-	while(true)
-	{
-		//The thread is blocked until being waken up
-		pManager->waitSemaphore();
-		if(pManager->isTerminated())
-			break;
-
-		printf("thread wakeup.\n");
-
-		//Get a job from the job queue
-		pManager->lockMutex();
-		if(pManager->isJobEmpty())
-		{
-			printf("thread: no job to pop!\n");
-			continue;
-		}else
-		{
-			nJob = pManager->popJob();
-		}
-		pManager->unlockMutex();
-
-
-		printf("call the job function.\n");
-		//pManager->runJobFunction(nWork);
-		nJob->fresult = nJob->func(nJob->fdata);
-		free(nJob);	//is this safe????????????????????????????????
-		//terminate if job queue is empty (so far)
-		if(pManager->isJobEmpty()){
-			pManager->setTerminate();
-		}
-	}
-
-	printf("thread terminate.\n");
-	return NULL;
-}*/
-
 
 FPThreadManager::FPThreadManager(int nMaxThreadCnt)
 {
@@ -243,13 +188,6 @@ ThreadJob* FPThreadManager::popJob()
 
 	return nJob;
 }
-
-// Run the job function (specified by the constructor) with the specified job data
-/*
-int FPThreadManager::runJobFunction(int nWork)
-{
-	return (*m_threadFuction)(nWork);
-}*/
 
 //return size of threadpool, number of threads
 int FPThreadManager::getSize()
