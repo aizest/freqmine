@@ -1070,7 +1070,7 @@ void FP_tree::scan1_DB(Data* fdat) {
 //*********************************************************
 	pManager->cleanResult();
 	for(int k = 0; k < pManager->getSize(); k++) {
-		ThreadJob* tj = new ThreadJob((void*)(new fp_scan1_DB_para(this, num_hot_node, k)), NULL, fp_scan1_DB);//should we release them
+		ThreadJob* tj = new ThreadJob((void*)(new fp_scan1_DB_para(this, num_hot_node, k)), NULL, fp_scan1_DB);
 		pManager->pushJob(tj);
 	}
 	pManager->isAllCompleted();
